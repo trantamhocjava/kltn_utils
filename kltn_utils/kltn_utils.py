@@ -150,7 +150,7 @@ def build_optimizer(model, config):
 
 
 def build_scheduler(optimizer, config):
-    if not config.use_scheduler:
+    if config.scheduler is None:
         return None, None
 
     monitor = None
