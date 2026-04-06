@@ -10,11 +10,16 @@ import torch.distributed as dist
 from open_clip import create_model_from_pretrained, get_tokenizer
 from PIL import Image
 from pytorch_lightning import seed_everything
+from pytorch_lightning.utilities import rank_zero_info
 from torch import optim
 from torchvision.io import ImageReadMode, read_image
 from torchvision.transforms import v2
 
 from . import kltn_const
+
+
+def rank_zero_info_newline(text):
+    rank_zero_info(f"\n{text}\n")
 
 
 def seed_everything_in_pl():
