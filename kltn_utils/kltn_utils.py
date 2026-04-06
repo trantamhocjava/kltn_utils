@@ -2,6 +2,7 @@ import csv
 import json
 import os
 
+import clip
 import numpy as np
 import timm
 import torch
@@ -173,9 +174,13 @@ def build_scheduler(optimizer, config):
     return scheduler, monitor
 
 
-def build_clip_model(model_name):
-    model, preprocess = create_model_from_pretrained(model_name)
-    tokenizer = get_tokenizer(model_name)
+def build_clip_model(clip_model_name):
+    if clip_model_name in kltn_const.CLIP_MODEL_FROM_OPENAI:
+        model, _ = clip.load(clip_model_name)
+        tokenizer = clip.tokenize
+    elif clip_model_name in kltn_const.CLIP_MODEL_FROM_HF_HUB:
+        model, _ = create_model_from_pretrained(clip_model_name)
+        tokenizer = get_tokenizer(clip_model_name)
 
     return model, tokenizer
 
