@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-import utils
+from . import utils
 
 setup(
     name="kltn_utils",  # Tên thư viện của bạn
