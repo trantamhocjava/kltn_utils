@@ -198,3 +198,21 @@ def freeze_module(m):
 def unfreeze_module(m):
     for param in m.parameters():
         param.requires_grad = True
+
+
+def get_img_feat_from_clip_model(clip_model, clip_model_name, img):
+    if clip_model_name in kltn_const.CLIP_MODEL_FROM_OPENAI:
+        img_feat = clip_model.encode_image(img)
+    elif clip_model_name in kltn_const.CLIP_MODEL_FROM_HF_HUB:
+        img_feat = clip_model(img, None)[0]
+
+    return img_feat
+
+
+def get_concept_feat_from_clip_model(clip_model, clip_model_name, concept_token):
+    if clip_model_name in kltn_const.CLIP_MODEL_FROM_OPENAI:
+        concept_feat = clip_model.encode_text(concept_token)
+    elif clip_model_name in kltn_const.CLIP_MODEL_FROM_HF_HUB:
+        concept_feat = clip_model(None, concept_token)[1]
+
+    return concept_feat
