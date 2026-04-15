@@ -16,3 +16,6 @@ CLIP_MODEL_FROM_HF_HUB = (
     "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
     "hf-hub:laion/CLIP-ViT-L-14-laion2B-s32B-b82K",
 )
+
+
+DATA_TYPES = "ndarray"
