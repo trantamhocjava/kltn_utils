@@ -223,3 +223,7 @@ def get_concept_feat_from_clip_model(clip_model, clip_model_name, concept_token)
         concept_feat = clip_model(None, concept_token)[1]
 
     return concept_feat
+
+
+def is_data_type(variable, data_type):
+    return type(variable).__name__ == data_type
