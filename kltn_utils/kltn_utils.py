@@ -14,6 +14,7 @@ from pytorch_lightning.utilities import rank_zero_info
 from torch import optim
 from torchvision.io import ImageReadMode, read_image
 from torchvision.transforms import v2
+from transformers import get_linear_schedule_with_warmup
 
 from . import kltn_const
 
@@ -164,7 +165,7 @@ def build_scheduler(optimizer, config):
             optimizer,
             start_factor=1,
             end_factor=0.01,
-            total_iters=config.end_epoch - config.start_epoch + 1,
+            total_iters=config.epochs,
         )
     elif config.scheduler == "StepLR":
         scheduler = optim.lr_scheduler.StepLR(
@@ -175,6 +176,12 @@ def build_scheduler(optimizer, config):
     elif config.scheduler == "ReduceLROnPlateau":
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer)
         monitor = "val_loss"
+    elif config.scheduler == "transformer_lr_scheduler":
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=config.warmup_steps,
+            num_training_steps=config.epochs * config.n_batchs,
+        )
 
     return scheduler, monitor
 
