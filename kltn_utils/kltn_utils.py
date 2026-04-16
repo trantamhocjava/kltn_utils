@@ -1,6 +1,8 @@
 import csv
+import gzip
 import json
 import os
+import shutil
 
 import clip
 import numpy as np
@@ -239,3 +241,11 @@ def is_data_type(variable, data_type):
             res = isinstance(variable, (np.floating, float))
 
     return res
+
+
+def uncompress_gzip(src_file_path, dst_file_path):
+    with gzip.open(src_file_path, "rb") as f_in:
+        with open(dst_file_path, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+    rank_zero_info_newline(f"Uncompress {src_file_path} to {dst_file_path} OK")
