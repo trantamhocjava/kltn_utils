@@ -5,13 +5,12 @@ import os
 import random
 import shutil
 
-import clip
 import matplotlib.pyplot as plt
 import numpy as np
+import open_clip
 import timm
 import torch
 import torch.distributed as dist
-from open_clip import create_model_from_pretrained, get_tokenizer
 from PIL import Image
 from pytorch_lightning import seed_everything
 from pytorch_lightning.utilities import rank_zero_info
@@ -192,11 +191,16 @@ def build_scheduler(optimizer, config):
 
 def build_clip_model(clip_model_name):
     if clip_model_name in kltn_const.CLIP_MODEL_FROM_OPENAI:
-        model, _ = clip.load(clip_model_name)
-        tokenizer = clip.tokenize
+        # Dùng pretrained từ OpenAI qua open-clip-torch
+        model, _, _ = open_clip.create_model_and_transforms(
+            model_name=clip_model_name,
+            pretrained="openai",
+        )
+        tokenizer = open_clip.get_tokenizer(clip_model_name)
+
     elif clip_model_name in kltn_const.CLIP_MODEL_FROM_HF_HUB:
-        model, _ = create_model_from_pretrained(clip_model_name)
-        tokenizer = get_tokenizer(clip_model_name)
+        model, _ = open_clip.create_model_from_pretrained(clip_model_name)
+        tokenizer = open_clip.get_tokenizer(clip_model_name)
 
     return model, tokenizer
 

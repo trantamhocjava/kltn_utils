@@ -11,11 +11,10 @@ PREPROCESS_LIST = [
     v2.ToDtype(torch.float32, scale=True),
     v2.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
 ]
-CLIP_MODEL_FROM_OPENAI = ["ViT-B/32", "ViT-B/16", "ViT-L/14"]
+CLIP_MODEL_FROM_OPENAI = ["ViT-B-32", "ViT-B-16", "ViT-L-14"]
 CLIP_MODEL_FROM_HF_HUB = (
     "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
     "hf-hub:laion/CLIP-ViT-L-14-laion2B-s32B-b82K",
 )
-
 
 DATA_TYPES = "ndarray"
