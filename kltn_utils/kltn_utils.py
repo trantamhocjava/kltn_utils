@@ -258,7 +258,17 @@ def show_img(
     height=6,
 ):
     img = Image.open(image_path)
+
+    # độ phân giải ảnh
+    img_width, img_height = img.size
+
+    # định dạng file
+    file_format = img.format
+
     plt.figure(figsize=(width, height))
     plt.imshow(img)
     plt.axis("off")
     plt.show()
+
+    print(f"resolution: {img_width} x {img_height}")
+    print(f"file format: {file_format}")
