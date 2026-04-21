@@ -5,6 +5,7 @@ import os
 import shutil
 
 import clip
+import matplotlib.pyplot as plt
 import numpy as np
 import timm
 import torch
@@ -249,3 +250,15 @@ def uncompress_gzip(src_file_path, dst_file_path):
             shutil.copyfileobj(f_in, f_out)
 
     rank_zero_info_newline(f"Uncompress {src_file_path} to {dst_file_path} OK")
+
+
+def show_img(
+    image_path,
+    width=8,
+    height=6,
+):
+    img = Image.open(image_path)
+    plt.figure(figsize=(width, height))
+    plt.imshow(img)
+    plt.axis("off")
+    plt.show()
