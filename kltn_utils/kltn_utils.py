@@ -2,10 +2,8 @@ import csv
 import gzip
 import json
 import os
-import random
 import shutil
 
-import matplotlib.pyplot as plt
 import numpy as np
 import open_clip
 import timm
@@ -14,6 +12,7 @@ import torch.distributed as dist
 from PIL import Image
 from pytorch_lightning import seed_everything
 from pytorch_lightning.utilities import rank_zero_info
+from sklearn import metrics
 from torch import optim
 from torchvision.io import ImageReadMode, read_image
 from torchvision.transforms import v2
@@ -216,7 +215,6 @@ def unfreeze_module(m):
 
 
 def get_img_feat_from_clip_model(clip_model, clip_model_name, img):
-    clip_model.eval()
     with torch.no_grad():
         if clip_model_name in kltn_const.CLIP_MODEL_FROM_OPENAI:
             img_feat = clip_model.encode_image(img)
@@ -227,7 +225,6 @@ def get_img_feat_from_clip_model(clip_model, clip_model_name, img):
 
 
 def get_concept_feat_from_clip_model(clip_model, clip_model_name, concept_token):
-    clip_model.eval()
     with torch.no_grad():
         if clip_model_name in kltn_const.CLIP_MODEL_FROM_OPENAI:
             concept_feat = clip_model.encode_text(concept_token)
@@ -257,56 +254,15 @@ def uncompress_gzip(src_file_path, dst_file_path):
     rank_zero_info_newline(f"Uncompress {src_file_path} to {dst_file_path} OK")
 
 
-def show_img(
-    image_path,
-    width=8,
-    height=6,
-):
-    img = Image.open(image_path)
-
-    # độ phân giải ảnh
-    img_width, img_height = img.size
-
-    # định dạng file
-    file_format = img.format
-
-    plt.figure(figsize=(width, height))
-    plt.imshow(img)
-    plt.axis("off")
-    plt.show()
-
-    print(f"resolution: {img_width} x {img_height}")
-    print(f"file format: {file_format}")
+def update_optimizer(optimizer):
+    optimizer.step()
+    optimizer.zero_grad(set_to_none=True)
 
 
-def random_sublist(src_list, num, replace=False):
-    if replace:
-        sub_list = random.choices(src_list, k=num)
-    else:
-        sub_list = random.sample(src_list, num)
+def cal_label_accuracy(y_true, y_pred, mode):
+    if mode == "acc":
+        result = metrics.accuracy_score(y_true, y_pred) * 100
+    elif mode == "bmac":
+        result = metrics.balanced_accuracy_score(y_true, y_pred) * 100
 
-    return sub_list
-
-
-def show_images(image_paths, m, n, figsize=(12, 8)):
-    fig, axes = plt.subplots(m, n, figsize=figsize)
-
-    # Trường hợp m*n = 1 thì axes không phải mảng
-    if m == 1 and n == 1:
-        axes = [[axes]]
-    elif m == 1:
-        axes = [axes]
-    elif n == 1:
-        axes = [[ax] for ax in axes]
-
-    for i in range(len(image_paths)):
-        row = i // n
-        col = i % n
-        ax = axes[row][col]
-
-        img = Image.open(image_paths[i])
-        ax.imshow(img)
-        ax.axis("off")
-
-    plt.tight_layout()
-    plt.show()
+    return result
