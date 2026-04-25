@@ -14,11 +14,13 @@ from pytorch_lightning import seed_everything
 from pytorch_lightning.utilities import rank_zero_info
 from sklearn import metrics
 from torch import optim
+from torch.utils.data import DataLoader, TensorDataset
 from torchvision.io import ImageReadMode, read_image
 from torchvision.transforms import v2
 from transformers import get_linear_schedule_with_warmup
 
 from . import kltn_const
+from .dataset import ImageDataset
 
 
 def rank_zero_info_newline(text):
@@ -77,7 +79,7 @@ def read_json_to_dict(file_path):
     return data
 
 
-def build_transform(config):
+def build_transform(transform_method):
     """Uniform preprocess follow preprocess architecture got from the code below
     ```
     from open_clip import create_model_from_pretrained, get_tokenizer
@@ -88,17 +90,15 @@ def build_transform(config):
     ```
 
     """
-    if config.transform == "uniform":
+    if transform_method == "uniform":
         train_transform = v2.Compose(kltn_const.PREPROCESS_LIST)
         val_transform = v2.Compose(kltn_const.PREPROCESS_LIST)
 
     return train_transform, val_transform
 
 
-def build_blackbox_model(config):
-    model = timm.create_model(
-        config.model, pretrained=True, num_classes=len(config.class_names)
-    )
+def build_blackbox_model(model_name, num_class):
+    model = timm.create_model(model_name, pretrained=True, num_classes=num_class)
 
     return model
 
@@ -118,40 +118,31 @@ def read_img(img_path):
     return res
 
 
-def build_optimizer(model, config):
+def build_optimizer(
+    model, optimizer_name, lr, momentum=0, weight_decay=0, betas=(0.9, 0.999)
+):
     grad_true_param = filter(lambda p: p.requires_grad, model.parameters())
 
-    if config.optimizer == "sgd":
+    if optimizer_name == "sgd":
         optimizer = optim.SGD(
             grad_true_param,
-            lr=config.lr,
-            momentum=config.momentum,
-            weight_decay=config.weight_decay,
+            lr=lr,
+            momentum=momentum,
+            weight_decay=weight_decay,
         )
-    elif config.optimizer == "sgd_v1":
-        optimizer = optim.SGD(
-            grad_true_param,
-            lr=config.lr,
-            weight_decay=config.weight_decay,
-        )
-    elif config.optimizer == "adam":
+    elif optimizer_name == "adam":
         optimizer = optim.Adam(
             grad_true_param,
-            lr=config.lr,
-            betas=(config.beta_1, config.beta_2),
-            weight_decay=config.weight_decay,
+            lr=lr,
+            weight_decay=weight_decay,
+            betas=betas,
         )
-    elif config.optimizer == "adam_v1":
-        optimizer = optim.Adam(
-            grad_true_param,
-            lr=config.lr,
-            weight_decay=config.weight_decay,
-        )
-    elif config.optimizer == "adamw":
+    elif optimizer_name == "adamw":
         optimizer = optim.AdamW(
             grad_true_param,
-            lr=config.lr,
-            weight_decay=config.weight_decay,
+            lr=lr,
+            weight_decay=weight_decay,
+            betas=betas,
         )
 
     return optimizer
@@ -171,9 +162,7 @@ def build_scheduler(optimizer, config):
         )
     elif config.scheduler == "StepLR":
         scheduler = optim.lr_scheduler.StepLR(
-            optimizer,
-            step_size=config.decrease_every,
-            gamma=1 / config.lr_divisor,
+            optimizer, step_size=config.step_size, gamma=config.gamma
         )
     elif config.scheduler == "ReduceLROnPlateau":
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer)
@@ -266,3 +255,71 @@ def cal_label_accuracy(y_true, y_pred, mode):
         result = metrics.balanced_accuracy_score(y_true, y_pred) * 100
 
     return result
+
+
+def get_img_feat(
+    clip_model,
+    clip_model_name,
+    dataset_dir,
+    batch_size,
+    transform_method,
+    class_names,
+):
+    train_transforms, val_transforms = build_transform(transform_method)
+
+    imgset = ImageDataset(
+        dataset_dir=dataset_dir,
+        transforms=train_transforms,
+        class_names=class_names,
+    )
+
+    img_loader = DataLoader(
+        imgset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+    )
+
+    res_img_feat = []
+    res_label = []
+
+    clip_model.cuda()
+    clip_model.eval()
+    for img, label in img_loader:
+        img = img.cuda()
+        img_feat = get_img_feat_from_clip_model(clip_model, clip_model_name, img).cpu()
+        res_img_feat.append(img_feat)
+        res_label.append(label)
+
+    res_img_feat = torch.cat(res_img_feat, dim=0)
+    res_label = torch.cat(res_label, dim=0)
+
+    return res_img_feat, res_label
+
+
+def get_txt_feat(texts, clip_model, clip_model_name, tokenizer, batch_size):
+    text_loader = DataLoader(
+        TensorDataset(texts),
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+    )
+
+    res_txt_feat = []
+
+    clip_model.cuda()
+    clip_model.eval()
+    for text in text_loader:
+        text_token = tokenizer(text).cuda()
+
+        txt_feat = get_concept_feat_from_clip_model(
+            clip_model, clip_model_name, text_token
+        ).cpu()
+
+        res_txt_feat.append(txt_feat)
+
+    res_txt_feat = torch.cat(res_txt_feat, dim=0)
+
+    return res_txt_feat
