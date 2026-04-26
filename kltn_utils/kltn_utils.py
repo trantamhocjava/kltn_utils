@@ -118,31 +118,29 @@ def read_img(img_path):
     return res
 
 
-def build_optimizer(
-    model, optimizer_name, lr, momentum=0, weight_decay=0, betas=(0.9, 0.999)
-):
+def build_optimizer(model, config):
     grad_true_param = filter(lambda p: p.requires_grad, model.parameters())
 
-    if optimizer_name == "sgd":
+    if config.optimizer == "sgd":
         optimizer = optim.SGD(
             grad_true_param,
-            lr=lr,
-            momentum=momentum,
-            weight_decay=weight_decay,
+            lr=config.lr,
+            momentum=config.momentum,
+            weight_decay=config.weight_decay,
         )
-    elif optimizer_name == "adam":
+    elif config.optimizer == "adam":
         optimizer = optim.Adam(
             grad_true_param,
-            lr=lr,
-            weight_decay=weight_decay,
-            betas=betas,
+            lr=config.lr,
+            weight_decay=config.weight_decay,
+            betas=config.betas,
         )
-    elif optimizer_name == "adamw":
+    elif config.optimizer == "adamw":
         optimizer = optim.AdamW(
             grad_true_param,
-            lr=lr,
-            weight_decay=weight_decay,
-            betas=betas,
+            lr=config.lr,
+            weight_decay=config.weight_decay,
+            betas=config.betas,
         )
 
     return optimizer
