@@ -11,17 +11,30 @@ PREPROCESS_LIST = [
     v2.ToDtype(torch.float32, scale=True),
     v2.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
 ]
-CLIP_MODEL_FROM_OPENAI = ["ViT-B-32", "ViT-B-16", "ViT-L-14"]
-CLIP_MODEL_FROM_HF_HUB = (
-    "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
-    "hf-hub:laion/CLIP-ViT-L-14-laion2B-s32B-b82K",
-)
-EMBEDDING_DIM = {
-    "ViT-B-32": 512,
-    "ViT-B-16": 512,
-    "ViT-L-14": 768,
-    "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224": 512,
-    "hf-hub:laion/CLIP-ViT-L-14-laion2B-s32B-b82K": 768,
+
+
+CLIP_MODELS = {
+    "ViT-B-32": {
+        "source": "openai",
+        "embedding_dim": 512,
+    },
+    "ViT-B-16": {
+        "source": "openai",
+        "embedding_dim": 512,
+    },
+    "ViT-L-14": {
+        "source": "openai",
+        "embedding_dim": 768,
+    },
+    "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224": {
+        "source": "hf-hub",
+        "embedding_dim": 512,
+    },
+    "hf-hub:laion/CLIP-ViT-L-14-laion2B-s32B-b82K": {
+        "source": "hf-hub",
+        "embedding_dim": 768,
+    },
 }
+
 
 DATA_TYPES = "ndarray"

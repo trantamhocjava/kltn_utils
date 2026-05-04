@@ -79,6 +79,27 @@ def read_json_to_dict(file_path):
     return data
 
 
+def save_list_dict_to_jsonl(data, filepath):
+    with open(filepath, "w", encoding="utf-8") as f:
+        for item in data:
+            f.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+
+def read_jsonl_to_list(file_path):
+    data = []
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+
+            if not line:
+                continue
+
+            data.append(json.loads(line))
+
+    return data
+
+
 def build_transform(transform_method):
     """Uniform preprocess follow preprocess architecture got from the code below
     ```
@@ -176,7 +197,9 @@ def build_scheduler(optimizer, config):
 
 
 def build_clip_model(clip_model_name):
-    if clip_model_name in kltn_const.CLIP_MODEL_FROM_OPENAI:
+    source = kltn_const.CLIP_MODELS[clip_model_name]["source"]
+
+    if source == "openai":
         # Dùng pretrained từ OpenAI qua open-clip-torch
         model, _, _ = open_clip.create_model_and_transforms(
             model_name=clip_model_name,
@@ -184,7 +207,7 @@ def build_clip_model(clip_model_name):
         )
         tokenizer = open_clip.get_tokenizer(clip_model_name)
 
-    elif clip_model_name in kltn_const.CLIP_MODEL_FROM_HF_HUB:
+    elif source == "hf-hub":
         model, _ = open_clip.create_model_from_pretrained(clip_model_name)
         tokenizer = open_clip.get_tokenizer(clip_model_name)
 
@@ -202,20 +225,24 @@ def unfreeze_module(m):
 
 
 def get_img_feat_from_clip_model(clip_model, clip_model_name, img):
+    source = kltn_const.CLIP_MODELS[clip_model_name]["source"]
+
     with torch.no_grad():
-        if clip_model_name in kltn_const.CLIP_MODEL_FROM_OPENAI:
+        if source == "openai":
             img_feat = clip_model.encode_image(img)
-        elif clip_model_name in kltn_const.CLIP_MODEL_FROM_HF_HUB:
+        elif source == "hf-hub":
             img_feat = clip_model(img, None)[0]
 
     return img_feat
 
 
 def get_concept_feat_from_clip_model(clip_model, clip_model_name, concept_token):
+    source = kltn_const.CLIP_MODELS[clip_model_name]["source"]
+
     with torch.no_grad():
-        if clip_model_name in kltn_const.CLIP_MODEL_FROM_OPENAI:
+        if source == "openai":
             concept_feat = clip_model.encode_text(concept_token)
-        elif clip_model_name in kltn_const.CLIP_MODEL_FROM_HF_HUB:
+        elif source == "hf-hub":
             concept_feat = clip_model(None, concept_token)[1]
 
     return concept_feat
@@ -260,14 +287,12 @@ def get_img_feat(
     clip_model_name,
     dataset_dir,
     batch_size,
-    transform_method,
+    transform,
     class_names,
 ):
-    train_transforms, val_transforms = build_transform(transform_method)
-
     imgset = ImageDataset(
         dataset_dir=dataset_dir,
-        transforms=train_transforms,
+        transforms=transform,
         class_names=class_names,
     )
 
@@ -321,3 +346,14 @@ def get_txt_feat(texts, clip_model, clip_model_name, tokenizer, batch_size):
     res_txt_feat = torch.cat(res_txt_feat, dim=0)
 
     return res_txt_feat
+
+
+def get_concept2class_matrix(concept2class):
+    num_concept = len(concept2class)
+    num_class = len(set(concept2class))
+
+    concept2class = torch.tensor(concept2class).long().view(1, -1)
+    matrix = torch.zeros(num_class, num_concept)
+    matrix.scatter_(0, concept2class, 1)
+
+    return matrix
