@@ -29,3 +29,13 @@ def build_clip_model(clip_model_name):
 
 clip_model = build_clip_model("ViT-B/32")
 img_feat = get_img_feat_from_clip_model(clip_model, "ViT-B/32", img)
+
+
+MODELS = {
+    "Salesforce/blip-image-captioning-base": {
+        "num_param": 247444600,
+        "load_model_time_second": 11.204865455627441,
+        "infer_1_img_second": 2.57,
+    },
+    ...
+}

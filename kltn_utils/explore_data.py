@@ -1,5 +1,6 @@
 import random
 
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from PIL import Image
 
@@ -57,3 +58,67 @@ def show_images(image_paths, m, n, figsize=(12, 8)):
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_bar_chart(
+    x_values,
+    y_values,
+    horizontal=False,
+    title="",
+    xlabel="",
+    ylabel="",
+    figsize=(10, 5),
+):
+    plt.figure(figsize=figsize)
+
+    if horizontal:
+        plt.barh(x_values, y_values)
+        plt.gca().invert_yaxis()
+        plt.xlabel(ylabel)
+        plt.ylabel(xlabel)
+        plt.xlim(left=0)
+    else:
+        plt.bar(x_values, y_values)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.ylim(bottom=0)
+
+    plt.title(title)
+    plt.tight_layout()
+    plt.show()
+
+
+def style_same_values_with_same_color(df, skip_cols=("criteria",)):
+    """
+    Tô cùng 1 màu cho các cell có cùng giá trị.
+    Ví dụ: mọi cell chứa 'microsoft/git-large-r-textcaps' sẽ cùng 1 màu.
+    skip_cols: các cột cần bỏ qua
+    """
+
+    # Lấy các giá trị cần tô màu
+    values = []
+    for col in df.columns:
+        if col in skip_cols:
+            continue
+        values.extend(df[col].dropna().astype(str).unique())
+
+    values = sorted(set(values))
+
+    # Tạo bảng màu
+    color_names = list(mcolors.TABLEAU_COLORS.values()) + list(
+        mcolors.CSS4_COLORS.values()
+    )
+
+    value_to_color = {
+        value: color_names[i % len(color_names)] for i, value in enumerate(values)
+    }
+
+    def color_cell(value):
+        value = str(value)
+
+        if value in value_to_color:
+            return f"background-color: {value_to_color[value]}; color: white;"
+
+        return ""
+
+    return df.style.map(color_cell)
