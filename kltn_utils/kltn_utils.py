@@ -3,6 +3,7 @@ import gzip
 import json
 import os
 import shutil
+from types import SimpleNamespace
 
 import numpy as np
 import open_clip
@@ -33,13 +34,6 @@ def seed_everything_in_pl():
 
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-
-
-def get_mode(monitor):
-    if monitor in kltn_const.METRIC_MAX:
-        return "max"
-    else:
-        return "min"
 
 
 def destroy_process_group():
@@ -79,6 +73,18 @@ def read_json_to_dict(file_path):
     return data
 
 
+def dict_to_namespace(obj):
+    if isinstance(obj, dict):
+        return SimpleNamespace(
+            **{key: dict_to_namespace(value) for key, value in obj.items()}
+        )
+
+    if isinstance(obj, list):
+        return [dict_to_namespace(item) for item in obj]
+
+    return obj
+
+
 def save_list_dict_to_jsonl(data, filepath):
     with open(filepath, "w", encoding="utf-8") as f:
         for item in data:
@@ -112,8 +118,8 @@ def build_transform(transform_method):
 
     """
     if transform_method == "uniform":
-        train_transform = v2.Compose(kltn_const.PREPROCESS_LIST)
-        val_transform = v2.Compose(kltn_const.PREPROCESS_LIST)
+        train_transform = v2.Compose(kltn_const.IMAGE_PREPROCESS_LIST)
+        val_transform = v2.Compose(kltn_const.IMAGE_PREPROCESS_LIST)
 
     return train_transform, val_transform
 
@@ -139,58 +145,61 @@ def read_img(img_path):
     return res
 
 
-def build_optimizer(model, config):
+def build_optimizer(model, optimizer_config):
     grad_true_param = filter(lambda p: p.requires_grad, model.parameters())
 
-    if config.optimizer == "sgd":
+    if optimizer_config["optimizer"] == "sgd":
         optimizer = optim.SGD(
             grad_true_param,
-            lr=config.lr,
-            momentum=config.momentum,
-            weight_decay=config.weight_decay,
+            lr=optimizer_config["lr"],
+            momentum=optimizer_config["momentum"],
+            weight_decay=optimizer_config["weight_decay"],
         )
-    elif config.optimizer == "adam":
+    elif optimizer_config["optimizer"] == "adam":
         optimizer = optim.Adam(
             grad_true_param,
-            lr=config.lr,
-            weight_decay=config.weight_decay,
-            betas=config.betas,
+            lr=optimizer_config["lr"],
+            weight_decay=optimizer_config["weight_decay"],
+            betas=optimizer_config["betas"],
         )
-    elif config.optimizer == "adamw":
+    elif optimizer_config["optimizer"] == "adamw":
         optimizer = optim.AdamW(
             grad_true_param,
-            lr=config.lr,
-            weight_decay=config.weight_decay,
-            betas=config.betas,
+            lr=optimizer_config["lr"],
+            weight_decay=optimizer_config["weight_decay"],
+            betas=optimizer_config["betas"],
         )
 
     return optimizer
 
 
-def build_scheduler(optimizer, config):
-    if config.scheduler is None:
+def build_scheduler(optimizer, scheduler_config):
+    if scheduler_config["scheduler"] is None:
         return None, None
 
     monitor = None
-    if config.scheduler == "LinearLR":
+    if scheduler_config["scheduler"] == "LinearLR":
         scheduler = optim.lr_scheduler.LinearLR(
             optimizer,
             start_factor=1,
             end_factor=0.01,
-            total_iters=config.epochs,
+            total_iters=scheduler_config["epochs"],
         )
-    elif config.scheduler == "StepLR":
+    elif scheduler_config["scheduler"] == "StepLR":
         scheduler = optim.lr_scheduler.StepLR(
-            optimizer, step_size=config.step_size, gamma=config.gamma
+            optimizer,
+            step_size=scheduler_config["step_size"],
+            gamma=scheduler_config["gamma"],
         )
-    elif config.scheduler == "ReduceLROnPlateau":
+    elif scheduler_config["scheduler"] == "ReduceLROnPlateau":
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer)
         monitor = "val_loss"
-    elif config.scheduler == "transformer_lr_scheduler":
+    elif scheduler_config["scheduler"] == "transformer_lr_scheduler":
         scheduler = get_linear_schedule_with_warmup(
             optimizer,
-            num_warmup_steps=config.warmup_steps,
-            num_training_steps=config.epochs * config.n_batchs,
+            num_warmup_steps=scheduler_config["warmup_steps"],
+            num_training_steps=scheduler_config["epochs"]
+            * scheduler_config["n_batchs"],
         )
 
     return scheduler, monitor
