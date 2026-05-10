@@ -85,6 +85,11 @@ def dict_to_namespace(obj):
     return obj
 
 
+def read_json_to_namespace(file_path):
+    result = dict_to_namespace(read_json_to_dict(file_path))
+    return result
+
+
 def save_list_dict_to_jsonl(data, filepath):
     with open(filepath, "w", encoding="utf-8") as f:
         for item in data:
