@@ -153,58 +153,57 @@ def read_img(img_path):
 def build_optimizer(model, optimizer_config):
     grad_true_param = filter(lambda p: p.requires_grad, model.parameters())
 
-    if optimizer_config["optimizer"] == "sgd":
+    if optimizer_config.optimizer == "sgd":
         optimizer = optim.SGD(
             grad_true_param,
-            lr=optimizer_config["lr"],
-            momentum=optimizer_config["momentum"],
-            weight_decay=optimizer_config["weight_decay"],
+            lr=optimizer_config.lr,
+            momentum=optimizer_config.momentum,
+            weight_decay=optimizer_config.weight_decay,
         )
-    elif optimizer_config["optimizer"] == "adam":
+    elif optimizer_config.optimizer == "adam":
         optimizer = optim.Adam(
             grad_true_param,
-            lr=optimizer_config["lr"],
-            weight_decay=optimizer_config["weight_decay"],
-            betas=optimizer_config["betas"],
+            lr=optimizer_config.lr,
+            weight_decay=optimizer_config.weight_decay,
+            betas=optimizer_config.betas,
         )
-    elif optimizer_config["optimizer"] == "adamw":
+    elif optimizer_config.optimizer == "adamw":
         optimizer = optim.AdamW(
             grad_true_param,
-            lr=optimizer_config["lr"],
-            weight_decay=optimizer_config["weight_decay"],
-            betas=optimizer_config["betas"],
+            lr=optimizer_config.lr,
+            weight_decay=optimizer_config.weight_decay,
+            betas=optimizer_config.betas,
         )
 
     return optimizer
 
 
 def build_scheduler(optimizer, scheduler_config):
-    if scheduler_config["scheduler"] is None:
+    if scheduler_config.scheduler is None:
         return None, None
 
     monitor = None
-    if scheduler_config["scheduler"] == "LinearLR":
+    if scheduler_config.scheduler == "LinearLR":
         scheduler = optim.lr_scheduler.LinearLR(
             optimizer,
             start_factor=1,
             end_factor=0.01,
-            total_iters=scheduler_config["epochs"],
+            total_iters=scheduler_config.epochs,
         )
-    elif scheduler_config["scheduler"] == "StepLR":
+    elif scheduler_config.scheduler == "StepLR":
         scheduler = optim.lr_scheduler.StepLR(
             optimizer,
-            step_size=scheduler_config["step_size"],
-            gamma=scheduler_config["gamma"],
+            step_size=scheduler_config.step_size,
+            gamma=scheduler_config.gamma,
         )
-    elif scheduler_config["scheduler"] == "ReduceLROnPlateau":
+    elif scheduler_config.scheduler == "ReduceLROnPlateau":
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer)
         monitor = "val_loss"
-    elif scheduler_config["scheduler"] == "transformer_lr_scheduler":
+    elif scheduler_config.scheduler == "transformer_lr_scheduler":
         scheduler = get_linear_schedule_with_warmup(
             optimizer,
-            num_warmup_steps=scheduler_config["warmup_steps"],
-            num_training_steps=scheduler_config["epochs"]
-            * scheduler_config["n_batchs"],
+            num_warmup_steps=scheduler_config.warmup_steps,
+            num_training_steps=scheduler_config.epochs * scheduler_config.n_batchs,
         )
 
     return scheduler, monitor
