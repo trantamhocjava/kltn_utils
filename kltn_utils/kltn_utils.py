@@ -161,6 +161,8 @@ def build_optimizer(model, optimizer_config):
             weight_decay=optimizer_config.weight_decay,
         )
     elif optimizer_config.optimizer == "adam":
+        optimizer_config.betas = tuple(optimizer_config.betas)
+
         optimizer = optim.Adam(
             grad_true_param,
             lr=optimizer_config.lr,
@@ -168,6 +170,8 @@ def build_optimizer(model, optimizer_config):
             betas=optimizer_config.betas,
         )
     elif optimizer_config.optimizer == "adamw":
+        optimizer_config.betas = tuple(optimizer_config.betas)
+
         optimizer = optim.AdamW(
             grad_true_param,
             lr=optimizer_config.lr,
@@ -179,7 +183,7 @@ def build_optimizer(model, optimizer_config):
 
 
 def build_scheduler(optimizer, scheduler_config):
-    if scheduler_config.scheduler is None:
+    if scheduler_config is None:
         return None, None
 
     monitor = None
@@ -361,7 +365,7 @@ def get_txt_feat(texts, clip_model, clip_model_name, tokenizer, batch_size):
     return res_txt_feat
 
 
-def get_concept2class_matrix(concept2class):
+def get_class2concept_matrix(concept2class):
     num_concept = len(concept2class)
     num_class = len(set(concept2class))
 
