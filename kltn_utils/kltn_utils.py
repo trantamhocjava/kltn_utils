@@ -1,7 +1,5 @@
-import csv
 import gzip
 import json
-import os
 import shutil
 from types import SimpleNamespace
 
@@ -36,29 +34,16 @@ def seed_everything_in_pl():
     torch.backends.cudnn.benchmark = False
 
 
+def get_mode(monitor):
+    if monitor in kltn_const.METRIC_MAX:
+        return "max"
+    else:
+        return "min"
+
+
 def destroy_process_group():
     if dist.is_available() and dist.is_initialized():
         dist.destroy_process_group()
-
-
-def create_csv_file(file_path, columns):
-    if os.path.exists(file_path):
-        return
-
-    with open(file_path, mode="w", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(columns)
-
-
-def fill_1line_in_csv_file(file_path, line):
-    with open(file_path, mode="a", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(line)
-
-
-def log_in_csv(test_result, columns, file_path):
-    line = [test_result[column] for column in columns]
-    fill_1line_in_csv_file(file_path, line)
 
 
 def save_dict_to_json(data, filepath):
