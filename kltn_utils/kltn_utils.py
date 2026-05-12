@@ -1,3 +1,4 @@
+import copy
 import gzip
 import json
 import shutil
@@ -56,6 +57,10 @@ def read_json_to_dict(file_path):
         data = json.load(f)
 
     return data
+
+
+def deepcopy_obj(obj):
+    return copy.deepcopy(obj)
 
 
 def add_prefix_in_dict(data, mode):
