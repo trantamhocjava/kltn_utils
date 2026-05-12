@@ -58,6 +58,10 @@ def read_json_to_dict(file_path):
     return data
 
 
+def add_prefix_in_dict(data, mode):
+    return {f"{mode}_{key}": value for key, value in data.items()}
+
+
 def dict_to_namespace(obj):
     if isinstance(obj, dict):
         return SimpleNamespace(
@@ -280,6 +284,15 @@ def cal_label_accuracy(y_true, y_pred, mode):
         result = metrics.accuracy_score(y_true, y_pred) * 100
     elif mode == "bmac":
         result = metrics.balanced_accuracy_score(y_true, y_pred) * 100
+
+    return result
+
+
+def cal_concept_accuracy(c_true, c_pred, mode):
+    if mode == "acc":
+        result = (c_true == c_pred).mean() * 100
+    elif mode == "overall_acc":
+        result = np.mean(np.all(c_true == c_pred, axis=1)) * 100
 
     return result
 
