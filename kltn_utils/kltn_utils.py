@@ -1,5 +1,6 @@
 import copy
 import json
+import os
 from types import SimpleNamespace
 
 import numpy as np
@@ -146,30 +147,32 @@ def read_img(img_path):
     return res
 
 
-def build_optimizer(model, optimizer_config):
+def build_optimizer(params, optimizer_config):
     grad_true_param = filter(lambda p: p.requires_grad, model.parameters())
+    optimizer_name = optimizer_config.optimizer
+    delattr(optimizer_config, "optimizer")
 
-    if optimizer_config.optimizer == "sgd":
+    if optimizer_name == "sgd":
         optimizer = optim.SGD(
-            grad_true_param,
+            params=grad_true_param,
             lr=optimizer_config.lr,
             momentum=optimizer_config.momentum,
             weight_decay=optimizer_config.weight_decay,
         )
-    elif optimizer_config.optimizer == "adam":
+    elif optimizer_name == "adam":
         optimizer_config.betas = tuple(optimizer_config.betas)
 
         optimizer = optim.Adam(
-            grad_true_param,
+            params=grad_true_param,
             lr=optimizer_config.lr,
             weight_decay=optimizer_config.weight_decay,
             betas=optimizer_config.betas,
         )
-    elif optimizer_config.optimizer == "adamw":
+    elif optimizer_name == "adamw":
         optimizer_config.betas = tuple(optimizer_config.betas)
 
         optimizer = optim.AdamW(
-            grad_true_param,
+            params=grad_true_param,
             lr=optimizer_config.lr,
             weight_decay=optimizer_config.weight_decay,
             betas=optimizer_config.betas,
@@ -373,3 +376,17 @@ def get_class2concept_matrix(concept2class):
     matrix.scatter_(0, concept2class, 1)
 
     return matrix
+
+
+def load_img_classify_data(dataset_dir, class_names):
+    file_paths = []
+    labels = []
+    for class_index, class_name in enumerate(class_names):
+        file_paths = [
+            f"{dataset_dir}/{class_name}/{i}"
+            for i in os.listdir(f"{dataset_dir}/{class_name}")
+        ]
+        file_paths += file_paths
+        labels += [class_index] * len(file_paths)
+
+    return file_paths, labels
