@@ -147,36 +147,32 @@ def read_img(img_path):
     return res
 
 
+def list2tuple_for_dict(dictionary):
+    result = {}
+
+    for key, value in dictionary.items():
+        if isinstance(value, list):
+            result[key] = tuple(value)
+        else:
+            result[key] = value
+
+    return result
+
+
 def build_optimizer(params, optimizer_config):
-    grad_true_param = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer_name = optimizer_config.optimizer
-    delattr(optimizer_config, "optimizer")
+    grad_true_param = filter(lambda p: p.requires_grad, params)
+
+    optimizer_config = vars(optimizer_config)
+    optimizer_name = optimizer_config.pop("optimizer")
+    optimizer_config = list2tuple_for_dict(optimizer_config)
+    optimizer_config["params"] = grad_true_param
 
     if optimizer_name == "sgd":
-        optimizer = optim.SGD(
-            params=grad_true_param,
-            lr=optimizer_config.lr,
-            momentum=optimizer_config.momentum,
-            weight_decay=optimizer_config.weight_decay,
-        )
+        optimizer = optim.SGD(**optimizer_config)
     elif optimizer_name == "adam":
-        optimizer_config.betas = tuple(optimizer_config.betas)
-
-        optimizer = optim.Adam(
-            params=grad_true_param,
-            lr=optimizer_config.lr,
-            weight_decay=optimizer_config.weight_decay,
-            betas=optimizer_config.betas,
-        )
+        optimizer = optim.Adam(**optimizer_config)
     elif optimizer_name == "adamw":
-        optimizer_config.betas = tuple(optimizer_config.betas)
-
-        optimizer = optim.AdamW(
-            params=grad_true_param,
-            lr=optimizer_config.lr,
-            weight_decay=optimizer_config.weight_decay,
-            betas=optimizer_config.betas,
-        )
+        optimizer = optim.AdamW(**optimizer_config)
 
     return optimizer
 

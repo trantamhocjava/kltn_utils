@@ -37,14 +37,12 @@ class MetricCalculator:
             concept_true, concept_pred, "overall_acc"
         )
 
-        loss_dict = self.return_loss_dict()
-
         return {
             "y_acc": y_acc,
             "y_bmac": y_bmac,
             "c_acc": c_acc,
             "c_overall_acc": c_overall_acc,
-            **loss_dict,
+            **self.return_loss_dict(),
         }
 
     def update_loss_dict(self, result):
