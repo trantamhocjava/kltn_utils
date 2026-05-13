@@ -1,7 +1,5 @@
 import copy
-import gzip
 import json
-import shutil
 from types import SimpleNamespace
 
 import numpy as np
@@ -88,6 +86,10 @@ def save_list_dict_to_jsonl(data, filepath):
     with open(filepath, "w", encoding="utf-8") as f:
         for item in data:
             f.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+
+def dict2device(dictionary, device):
+    return {key: value.to(device) for key, value in dictionary.items()}
 
 
 def read_jsonl_to_list(file_path):
@@ -221,6 +223,11 @@ def build_clip_model(clip_model_name):
     elif source == "hf-hub":
         model, _ = open_clip.create_model_from_pretrained(clip_model_name)
         tokenizer = open_clip.get_tokenizer(clip_model_name)
+    elif source == "user_defined":
+        build_clip_model_func = kltn_const.CLIP_MODELS[clip_model_name][
+            "build_clip_model_func"
+        ]
+        model, tokenizer = build_clip_model_func(clip_model_name)
 
     return model, tokenizer
 
@@ -260,23 +267,12 @@ def get_concept_feat_from_clip_model(clip_model, clip_model_name, concept_token)
 
 
 def is_data_type(variable, data_type):
-    res = None
+    result = None
 
-    if data_type in kltn_const.DATA_TYPES:
-        res = type(variable).__name__ == data_type
-    else:
-        if data_type == "float":
-            res = isinstance(variable, (np.floating, float))
+    if data_type == "float":
+        result = isinstance(variable, (np.floating, float))
 
-    return res
-
-
-def uncompress_gzip(src_file_path, dst_file_path):
-    with gzip.open(src_file_path, "rb") as f_in:
-        with open(dst_file_path, "wb") as f_out:
-            shutil.copyfileobj(f_in, f_out)
-
-    rank_zero_info_newline(f"Uncompress {src_file_path} to {dst_file_path} OK")
+    return result
 
 
 def update_optimizer(optimizer):

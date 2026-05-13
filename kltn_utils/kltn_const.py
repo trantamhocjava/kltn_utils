@@ -1,6 +1,8 @@
 import torch
 from torchvision.transforms import InterpolationMode, v2
 
+from .clip_model import build_clip_model
+
 SEEDING = 42
 
 METRIC_MAX = ("val_c_overall_acc", "val_c_acc", "val_y_acc", "val_y_bmac")
@@ -31,12 +33,24 @@ CLIP_MODELS = {
     "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224": {
         "source": "hf-hub",
         "embedding_dim": 512,
+        "visual_feature_dim": 768,
+        "num_heads": 12,
+        "logit_scale": 85.2323,
     },
     "hf-hub:laion/CLIP-ViT-L-14-laion2B-s32B-b82K": {
         "source": "hf-hub",
         "embedding_dim": 768,
+        "visual_feature_dim": 1024,
+        "num_heads": 16,
+        "logit_scale": 99.998,
+    },
+    "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224.orig_in21k": {
+        "source": "user_defined",
+        "org_clip_model_name": "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+        "embedding_dim": 512,
+        "visual_feature_dim": 768,
+        "num_heads": 12,
+        "logit_scale": 85.2323,
+        "build_clip_model_func": build_clip_model.build_biomedclip_orig_in21k,
     },
 }
-
-
-DATA_TYPES = "ndarray"
