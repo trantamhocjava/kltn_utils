@@ -1,1 +1,0 @@
-def build_biomedclip_orig_in21k()
