@@ -93,6 +93,10 @@ def dict2device(dictionary, device):
     return {key: value.to(device) for key, value in dictionary.items()}
 
 
+def detach_dict(dictionary):
+    return {key: value.detach().cpu() for key, value in dictionary.items()}
+
+
 def read_jsonl_to_list(file_path):
     data = []
 
@@ -249,6 +253,11 @@ def get_img_feat_from_clip_model(clip_model, clip_model_name, img):
             img_feat = clip_model.encode_image(img)
         elif source == "hf-hub":
             img_feat = clip_model(img, None)[0]
+        elif source == "user_defined":
+            get_img_feat_func = kltn_const.CLIP_MODELS[clip_model_name][
+                "get_img_feat_func"
+            ]
+            img_feat = get_img_feat_func(clip_model, img)
 
     return img_feat
 
@@ -261,6 +270,11 @@ def get_concept_feat_from_clip_model(clip_model, clip_model_name, concept_token)
             concept_feat = clip_model.encode_text(concept_token)
         elif source == "hf-hub":
             concept_feat = clip_model(None, concept_token)[1]
+        elif source == "user_defined":
+            get_concept_feat_func = kltn_const.CLIP_MODELS[clip_model_name][
+                "get_concept_feat_func"
+            ]
+            concept_feat = get_concept_feat_func(clip_model, concept_token)
 
     return concept_feat
 

@@ -1,7 +1,7 @@
 import torch
 from torchvision.transforms import InterpolationMode, v2
 
-from .clip_model import build_clip_model
+from .clip_model import build_clip_model, get_feat
 
 SEEDING = 42
 
@@ -52,5 +52,7 @@ CLIP_MODELS = {
         "num_heads": 12,
         "logit_scale": 85.2323,
         "build_clip_model_func": build_clip_model.build_biomedclip_orig_in21k,
+        "get_img_feat_func": get_feat.get_img_feat_hf_hub,
+        "get_concept_feat_func": get_feat.get_concept_feat_hf_hub,
     },
 }
