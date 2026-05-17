@@ -185,29 +185,21 @@ def build_scheduler(optimizer, scheduler_config):
     if scheduler_config is None:
         return None, None
 
+    scheduler_config = vars(scheduler_config)
+    scheduler_name = scheduler_config.pop("scheduler")
+    scheduler_config = list2tuple_for_dict(scheduler_config)
+    scheduler_config["optimizer"] = optimizer
+
     monitor = None
-    if scheduler_config.scheduler == "LinearLR":
-        scheduler = optim.lr_scheduler.LinearLR(
-            optimizer,
-            start_factor=1,
-            end_factor=0.01,
-            total_iters=scheduler_config.epochs,
-        )
-    elif scheduler_config.scheduler == "StepLR":
-        scheduler = optim.lr_scheduler.StepLR(
-            optimizer,
-            step_size=scheduler_config.step_size,
-            gamma=scheduler_config.gamma,
-        )
-    elif scheduler_config.scheduler == "ReduceLROnPlateau":
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer)
+    if scheduler_name == "LinearLR":
+        scheduler = optim.lr_scheduler.LinearLR(**scheduler_config)
+    elif scheduler_name == "StepLR":
+        scheduler = optim.lr_scheduler.StepLR(**scheduler_config)
+    elif scheduler_name == "ReduceLROnPlateau":
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(**scheduler_config)
         monitor = "val_loss"
-    elif scheduler_config.scheduler == "transformer_lr_scheduler":
-        scheduler = get_linear_schedule_with_warmup(
-            optimizer,
-            num_warmup_steps=scheduler_config.warmup_steps,
-            num_training_steps=scheduler_config.epochs * scheduler_config.n_batchs,
-        )
+    elif scheduler_name == "transformer_lr_scheduler":
+        scheduler = get_linear_schedule_with_warmup(**scheduler_config)
 
     return scheduler, monitor
 
