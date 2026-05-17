@@ -1,14 +1,25 @@
-def dict_to_namespace(obj):
-    if isinstance(obj, dict):
-        return SimpleNamespace(
-            **{key: dict_to_namespace(value) for key, value in obj.items()}
-        )
+import re
+from pathlib import Path
 
-    if isinstance(obj, list):
-        return [dict_to_namespace(item) for item in obj]
+path = Path("setup.py")
+text = path.read_text(encoding="utf-8")
 
-    return obj
+pattern = r'version\s*=\s*"0\.1\.(\d+)"'
 
+match = re.search(pattern, text)
+if not match:
+    raise ValueError("Không tìm thấy version dạng 0.1.A trong setup.py")
 
-b = dict_to_namespace(a)
-b.hello = "how"
+old_patch = int(match.group(1))
+new_patch = old_patch + 1
+
+new_text = re.sub(
+    pattern,
+    f'version="0.1.{new_patch}"',
+    text,
+    count=1,
+)
+
+path.write_text(new_text, encoding="utf-8")
+
+print(f"Updated version: 0.1.{old_patch} -> 0.1.{new_patch}")
