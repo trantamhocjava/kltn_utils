@@ -8,13 +8,13 @@ from . import kltn_utils
 
 
 class MetricCalculator:
-    def reset(self, loss_dict):
+    def reset(self):
         self.y_pred = []
         self.y_true = []
         self.c_pred = []
         self.c_true = []
 
-        self.loss_dict = loss_dict
+        self.loss_dict = self.get_loss_dict()
 
     def update(self, result):
         y_pred = torch.argmax(result["y_logits"].detach(), dim=1)
@@ -48,6 +48,9 @@ class MetricCalculator:
             **self.return_loss_dict(),
         }
 
+    def get_loss_dict(self):
+        pass
+
     def update_loss_dict(self, result):
         for key, value in result.items():
             self.loss_dict[key].append(value.item())
@@ -62,26 +65,21 @@ class MetricCalculator:
 
 
 class BaseTrain(pl.LightningModule):
-    def __init__(self, config, train_metric, val_metric, test_metric, cp_path):
+    def __init__(self, config, CustomMetric, cp_path):
         super().__init__()
 
         self.config = config
 
-        self.train_metric = train_metric
-        self.val_metric = val_metric
-        self.test_metric = test_metric
+        self.train_metric = CustomMetric()
+        self.val_metric = CustomMetric()
+        self.test_metric = CustomMetric()
 
         self.cp_path = cp_path
 
-    # define optimizers
-    def configure_optimizers(self):
-        res = {
-            "optimizer": kltn_utils.build_optimizer(self.model, self.config),
-        }
-
-        return res
-
     def get_loss(self, batch):
+        pass
+
+    def update_optimizer_manually(self):
         pass
 
     def on_train_epoch_start(self):
@@ -91,6 +89,9 @@ class BaseTrain(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         result = self.get_loss(batch)
+
+        # Update optimizer manually
+        self.update_optimizer_manually()
 
         # Update loss and metric
         self.train_metric.update(result)
