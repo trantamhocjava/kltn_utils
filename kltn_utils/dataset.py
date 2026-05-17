@@ -1,28 +1,22 @@
-import os
-
 from torch.utils.data import Dataset
 from torchvision.io import ImageReadMode, read_image
+
+from . import kltn_utils
 
 
 class ImageDataset(Dataset):
     def __init__(
         self,
         dataset_dir,
-        transforms,
+        transform,
         class_names,
     ):
         self.dataset_dir = dataset_dir
-        self.transforms = transforms
+        self.transforms = transform
 
-        self.file_paths = []
-        self.labels = []
-        for class_index, class_name in enumerate(class_names):
-            file_paths = [
-                f"{dataset_dir}/{class_name}/{i}"
-                for i in os.listdir(f"{dataset_dir}/{class_name}")
-            ]
-            self.file_paths += file_paths
-            self.labels += [class_index] * len(file_paths)
+        self.file_paths, self.labels = kltn_utils.load_img_classify_data(
+            dataset_dir, class_names
+        )
 
     def __len__(self):
         return len(self.file_paths)

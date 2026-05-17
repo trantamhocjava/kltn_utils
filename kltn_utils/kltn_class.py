@@ -65,10 +65,8 @@ class MetricCalculator:
 
 
 class BaseTrain(pl.LightningModule):
-    def __init__(self, config, CustomMetric, cp_path):
+    def __init__(self, CustomMetric, cp_path):
         super().__init__()
-
-        self.config = config
 
         self.train_metric = CustomMetric()
         self.val_metric = CustomMetric()

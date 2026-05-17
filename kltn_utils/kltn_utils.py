@@ -313,7 +313,7 @@ def get_img_feat(
 ):
     imgset = ImageDataset(
         dataset_dir=dataset_dir,
-        transforms=transform,
+        transform=transform,
         class_names=class_names,
     )
 
