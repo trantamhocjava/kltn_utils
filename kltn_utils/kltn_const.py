@@ -16,6 +16,8 @@ IMAGE_PREPROCESS_LIST = [
     v2.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
 ]
 
+CP_PATH = "/kaggle/working/checkpoint"
+
 
 CLIP_MODELS = {
     "ViT-B-32": {
