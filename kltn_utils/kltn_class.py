@@ -1,4 +1,7 @@
+import time
+
 import numpy as np
+import pytorch_lightning as pl
 import torch
 
 from . import kltn_utils
@@ -56,3 +59,79 @@ class MetricCalculator:
             result[key] = np.array(value).mean()
 
         return result
+
+
+class BaseTrain(pl.LightningModule):
+    def __init__(self, config, train_metric, val_metric, test_metric, cp_path):
+        super().__init__()
+
+        self.config = config
+
+        self.train_metric = train_metric
+        self.val_metric = val_metric
+        self.test_metric = test_metric
+
+        self.cp_path = cp_path
+
+    # define optimizers
+    def configure_optimizers(self):
+        res = {
+            "optimizer": kltn_utils.build_optimizer(self.model, self.config),
+        }
+
+        return res
+
+    def get_loss(self, batch):
+        pass
+
+    def on_train_epoch_start(self):
+        self.train_metric.reset()
+        self.val_metric.reset()
+        self.start_time = time.time()
+
+    def training_step(self, batch, batch_idx):
+        result = self.get_loss(batch)
+
+        # Update loss and metric
+        self.train_metric.update(result)
+
+        return result["loss"]
+
+    def on_validation_epoch_end(self):
+        metric = {
+            **kltn_utils.add_prefix_in_dict(
+                self.train_metric.return_metrics(), "train"
+            ),
+            **kltn_utils.add_prefix_in_dict(self.test_metric.return_metrics(), "val"),
+            "epoch_time": time.time() - self.start_time,
+        }
+
+        self.log_result(metric)
+
+    def validation_step(self, batch, batch_idx):
+        result = self.get_loss(batch)
+
+        # Update loss and metric
+        self.val_metric.update(result)
+
+    def on_test_epoch_start(self):
+        self.test_metric.reset()
+        self.start_time = time.time()
+
+    def on_test_epoch_end(self):
+        test_result = {
+            **kltn_utils.add_prefix_in_dict(self.test_metric.return_metrics(), "test"),
+            "test_time": time.time() - self.start_time,
+        }
+
+        kltn_utils.save_dict_to_json(test_result, f"{self.cp_path}/test_result.json")
+
+    def test_step(self, batch, batch_idx):
+        result = self.get_loss(batch)
+
+        # Update loss and metric
+        self.test_metric.update(result)
+
+    def log_result(self, metric):
+        for key, value in metric.items():
+            self.log(key, value, on_step=False, on_epoch=True, sync_dist=True)

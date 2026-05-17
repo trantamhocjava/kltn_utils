@@ -39,7 +39,6 @@ def train_model(last_state, monitor, end_epoch, amp, model, train_loader, val_lo
         callbacks=[model_ckpt],
     )
 
-    kltn_utils.rank_zero_info_newline("Train model")
     trainer.fit(
         model,
         train_dataloaders=train_loader,
