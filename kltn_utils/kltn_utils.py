@@ -388,6 +388,18 @@ def get_class2concept_matrix(concept2class):
     return matrix
 
 
+def build_class_concept_matrix(concept2class, num_class):
+    num_concept = len(concept2class)
+
+    matrix = torch.zeros(num_class, num_concept, dtype=torch.long)
+
+    for concept_idx, class_indices in enumerate(concept2class):
+        for class_idx in class_indices:
+            matrix[class_idx, concept_idx] = 1
+
+    return matrix
+
+
 def load_img_classify_data(dataset_dir, class_names):
     file_paths = []
     labels = []
@@ -400,3 +412,7 @@ def load_img_classify_data(dataset_dir, class_names):
         labels += [class_index] * len(file_paths)
 
     return file_paths, labels
+
+
+def get_sublist(src_list, select_idx):
+    return [src_list[idx] for idx in select_idx]
