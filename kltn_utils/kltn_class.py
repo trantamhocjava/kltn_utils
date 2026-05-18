@@ -77,7 +77,7 @@ class BaseTrain(pl.LightningModule):
     def get_loss(self, batch):
         pass
 
-    def update_optimizer_manually(self):
+    def update_optimizer_manually(self, result):
         pass
 
     def on_train_epoch_start(self):
@@ -88,8 +88,9 @@ class BaseTrain(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         result = self.get_loss(batch)
 
-        # Update optimizer manually
-        self.update_optimizer_manually()
+        # Update optimizer manually if automatic_optimization = false
+        if not self.automatic_optimization:
+            self.update_optimizer_manually(result)
 
         # Update loss and metric
         self.train_metric.update(result)
@@ -97,12 +98,13 @@ class BaseTrain(pl.LightningModule):
         return result["loss"]
 
     def on_validation_epoch_end(self):
+        epoch_time = (time.time() - self.start_time,)
         metric = {
             **kltn_utils.add_prefix_in_dict(
                 self.train_metric.return_metrics(), "train"
             ),
             **kltn_utils.add_prefix_in_dict(self.test_metric.return_metrics(), "val"),
-            "epoch_time": time.time() - self.start_time,
+            "epoch_time": epoch_time,
         }
 
         self.log_result(metric)
@@ -118,9 +120,10 @@ class BaseTrain(pl.LightningModule):
         self.start_time = time.time()
 
     def on_test_epoch_end(self):
+        test_time = time.time() - self.start_time
         test_result = {
             **kltn_utils.add_prefix_in_dict(self.test_metric.return_metrics(), "test"),
-            "test_time": time.time() - self.start_time,
+            "test_time": test_time,
         }
 
         kltn_utils.save_dict_to_json(test_result, f"{self.cp_path}/test_result.json")

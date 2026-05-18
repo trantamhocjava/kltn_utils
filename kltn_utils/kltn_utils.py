@@ -151,6 +151,21 @@ def read_img(img_path):
     return res
 
 
+def read_gray_img(img_path):
+    res = None
+
+    try:
+        res = read_image(
+            img_path,
+            mode=ImageReadMode.GRAY,
+        )
+    except Exception:
+        mask = Image.open(img_path).convert("L")  # ảnh xám
+        res = torch.from_numpy(np.array(mask, dtype=np.uint8)).unsqueeze(0)
+
+    return res
+
+
 def list2tuple_for_dict(dictionary):
     result = {}
 

@@ -45,3 +45,13 @@ def train_model(
         val_dataloaders=val_loader,
         ckpt_path=ckpt_path,
     )
+
+
+def test_model(model, best_model_path, test_loader):
+    tester = Trainer(
+        accelerator="gpu",
+        devices=1,
+        precision=32,
+    )
+
+    tester.test(model=model, ckpt_path=best_model_path, dataloaders=test_loader)
