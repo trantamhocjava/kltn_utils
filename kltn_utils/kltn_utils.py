@@ -8,8 +8,8 @@ import open_clip
 import timm
 import torch
 import torch.distributed as dist
-from lightning.pytorch import seed_everything
-from lightning.pytorch.utilities.rank_zero import rank_zero_info
+from pytorch_lightning import seed_everything
+from pytorch_lightning.utilities.rank_zero import rank_zero_info
 from PIL import Image
 from sklearn import metrics
 from torch import optim
