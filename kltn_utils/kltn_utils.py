@@ -8,9 +8,9 @@ import open_clip
 import timm
 import torch
 import torch.distributed as dist
+from PIL import Image
 from pytorch_lightning import seed_everything
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
-from PIL import Image
 from sklearn import metrics
 from torch import optim
 from torch.utils.data import DataLoader, TensorDataset
