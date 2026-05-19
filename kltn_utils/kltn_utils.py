@@ -8,9 +8,9 @@ import open_clip
 import timm
 import torch
 import torch.distributed as dist
+from lightning.pytorch import seed_everything
+from lightning.pytorch.utilities.rank_zero import rank_zero_info
 from PIL import Image
-from pytorch_lightning import seed_everything
-from pytorch_lightning.utilities import rank_zero_info
 from sklearn import metrics
 from torch import optim
 from torch.utils.data import DataLoader, TensorDataset
@@ -19,7 +19,6 @@ from torchvision.transforms import v2
 from transformers import get_linear_schedule_with_warmup
 
 from . import kltn_const
-from .dataset import ImageDataset
 
 
 def rank_zero_info_newline(text):
