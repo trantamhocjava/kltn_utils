@@ -103,7 +103,7 @@ class BaseTrain(pl.LightningModule):
             **kltn_utils.add_prefix_in_dict(
                 self.train_metric.return_metrics(), "train"
             ),
-            **kltn_utils.add_prefix_in_dict(self.test_metric.return_metrics(), "val"),
+            **kltn_utils.add_prefix_in_dict(self.val_metric.return_metrics(), "val"),
             "epoch_time": epoch_time,
         }
 
