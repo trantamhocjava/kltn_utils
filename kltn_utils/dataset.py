@@ -1,5 +1,4 @@
 from torch.utils.data import Dataset
-from torchvision.io import ImageReadMode, read_image
 
 from . import kltn_utils
 
@@ -25,10 +24,7 @@ class ImageDataset(Dataset):
         file_path = self.file_paths[idx]
         label = int(self.labels[idx])
 
-        img = read_image(
-            file_path,
-            mode=ImageReadMode.RGB,
-        )
+        img = kltn_utils.read_img(file_path)
 
         if self.transforms is not None:
             img = self.transforms(img)
@@ -57,10 +53,7 @@ class ImageConceptDataset(Dataset):
         label = int(self.labels[idx])
         concept = self.class2concept[label]
 
-        img = read_image(
-            file_path,
-            mode=ImageReadMode.RGB,
-        )
+        img = kltn_utils.read_img(file_path)
 
         if self.transforms is not None:
             img = self.transforms(img)
