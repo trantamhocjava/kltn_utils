@@ -116,6 +116,11 @@ def adacbm_selection(
     num_images_per_class,
     pearson_weight,
 ):
+    # TODO: DEBUG
+    kltn_utils.rank_zero_info_newline(f"img_feat.shape: {img_feat.shape}")
+    kltn_utils.rank_zero_info_newline(f"concept_feat.shape: {concept_feat.shape}")
+    # END DEBUG
+
     concept2cls = np.array(concept2cls)
 
     num_cls = len(num_images_per_class)
@@ -125,6 +130,15 @@ def adacbm_selection(
     sorted_concept2cls_idx = np.argsort(concept2cls)
     sorted_concept2cls = torch.from_numpy(concept2cls[sorted_concept2cls_idx])
     sorted_concept_feat = concept_feat[torch.from_numpy(sorted_concept2cls_idx), :]
+
+    # TODO: DEBUG
+    kltn_utils.rank_zero_info_newline(
+        f"sorted_concept2cls.shape: {sorted_concept2cls.shape}"
+    )
+    kltn_utils.rank_zero_info_newline(
+        f"sorted_concept_feat.shape: {sorted_concept_feat.shape}"
+    )
+    # END DEBUG
 
     dot_product = img_feat @ sorted_concept_feat.t()
 
