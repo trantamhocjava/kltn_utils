@@ -18,7 +18,7 @@ from torchvision.io import ImageReadMode, read_image
 from torchvision.transforms import v2
 from transformers import get_linear_schedule_with_warmup
 
-from . import kltn_const
+from . import dataset, kltn_const
 
 
 def rank_zero_info_newline(text):
@@ -325,7 +325,7 @@ def get_img_feat(
     transform,
     class_names,
 ):
-    imgset = ImageDataset(
+    imgset = dataset.ImageDataset(
         dataset_dir=dataset_dir,
         transform=transform,
         class_names=class_names,
