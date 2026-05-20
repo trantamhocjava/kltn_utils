@@ -421,10 +421,9 @@ def get_sublist(src_list, select_idx):
     return [src_list[idx] for idx in select_idx]
 
 
-def get_num_images_per_class(dataset_dir, class_names, mode):
+def get_num_images_per_class(dataset_dir, class_names):
     num_images_per_class = [
-        len(os.listdir(f"{dataset_dir}/{mode}/{class_name}"))
-        for class_name in class_names
+        len(os.listdir(f"{dataset_dir}/{class_name}")) for class_name in class_names
     ]
 
     return num_images_per_class
