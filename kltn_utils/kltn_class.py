@@ -98,7 +98,7 @@ class BaseTrain(pl.LightningModule):
         return result["loss"]
 
     def on_validation_epoch_end(self):
-        epoch_time = (time.time() - self.start_time,)
+        epoch_time = time.time() - self.start_time
         metric = {
             **kltn_utils.add_prefix_in_dict(
                 self.train_metric.return_metrics(), "train"
