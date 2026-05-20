@@ -385,6 +385,7 @@ def get_txt_feat(texts, clip_model, clip_model_name, tokenizer, batch_size):
 
 
 def get_class2concept_matrix(concept2class):
+    """each element in concept2class is a number"""
     num_concept = len(concept2class)
     num_class = len(set(concept2class))
 
@@ -396,6 +397,7 @@ def get_class2concept_matrix(concept2class):
 
 
 def build_class_concept_matrix(concept2class, num_class):
+    """each element in concept2class is list of number"""
     num_concept = len(concept2class)
 
     matrix = torch.zeros(num_class, num_concept, dtype=torch.long)
