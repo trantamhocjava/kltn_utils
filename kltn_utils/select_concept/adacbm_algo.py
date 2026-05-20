@@ -116,6 +116,8 @@ def adacbm_selection(
     num_images_per_class,
     pearson_weight,
 ):
+    concept2cls = np.array(concept2cls)
+
     num_cls = len(num_images_per_class)
     num_concepts_per_cls = int(np.ceil(num_select_concepts / num_cls))
 
