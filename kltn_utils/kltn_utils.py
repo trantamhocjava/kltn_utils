@@ -404,18 +404,18 @@ def build_class_concept_matrix(concept2class, num_class):
 
 
 def load_img_classify_data(dataset_dir, class_names):
-    res_file_paths = []
-    res_labels = []
+    file_paths = []
+    labels = []
 
     for class_index, class_name in enumerate(class_names):
-        file_paths = [
+        file_paths_item = [
             f"{dataset_dir}/{class_name}/{i}"
             for i in os.listdir(f"{dataset_dir}/{class_name}")
         ]
-        res_file_paths += file_paths
-        res_labels += [class_index] * len(file_paths)
+        file_paths += file_paths_item
+        labels += [class_index] * len(file_paths_item)
 
-    return res_file_paths, res_labels
+    return file_paths, labels
 
 
 def get_sublist(src_list, select_idx):
