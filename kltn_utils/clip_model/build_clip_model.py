@@ -2,7 +2,7 @@ import open_clip
 import timm
 import torch.nn as nn
 
-from .. import kltn_const
+from .. import kltn_const, kltn_utils
 
 
 def build_biomedclip_orig_in21k(clip_model_name):
@@ -11,6 +11,7 @@ def build_biomedclip_orig_in21k(clip_model_name):
     model, _ = open_clip.create_model_from_pretrained(org_clip_model_name)
     tokenizer = open_clip.get_tokenizer(org_clip_model_name)
 
+    kltn_utils.rank_zero_info_newline("replace visual encoder weight")
     src_model = timm.create_model(
         "vit_base_patch16_224.orig_in21k",
         pretrained=True,
