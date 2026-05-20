@@ -8,7 +8,7 @@ from .. import kltn_const
 def build_biomedclip_orig_in21k(clip_model_name):
     org_clip_model_name = kltn_const.CLIP_MODELS[clip_model_name]["org_clip_model_name"]
 
-    model, _ = open_clip.create_model_from_pretrained(clip_model_name)
+    model, _ = open_clip.create_model_from_pretrained(org_clip_model_name)
     tokenizer = open_clip.get_tokenizer(org_clip_model_name)
 
     src_model = timm.create_model(
