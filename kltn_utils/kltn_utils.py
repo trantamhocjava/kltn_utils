@@ -384,27 +384,21 @@ def get_txt_feat(texts, clip_model, clip_model_name, tokenizer, batch_size):
     return res_txt_feat
 
 
-def get_class2concept_matrix(concept2class):
-    """each element in concept2class is a number"""
-    num_concept = len(concept2class)
-    num_class = len(set(concept2class))
-
-    concept2class = torch.tensor(concept2class).long().view(1, -1)
-    matrix = torch.zeros(num_class, num_concept)
-    matrix.scatter_(0, concept2class, 1)
-
-    return matrix
-
-
 def build_class_concept_matrix(concept2class, num_class):
-    """each element in concept2class is list of number"""
-    num_concept = len(concept2class)
+    if type(concept2class[0]).__name__ == "list":
+        num_concept = len(concept2class)
 
-    matrix = torch.zeros(num_class, num_concept, dtype=torch.long)
+        matrix = torch.zeros(num_class, num_concept, dtype=torch.long)
 
-    for concept_idx, class_indices in enumerate(concept2class):
-        for class_idx in class_indices:
-            matrix[class_idx, concept_idx] = 1
+        for concept_idx, class_indices in enumerate(concept2class):
+            for class_idx in class_indices:
+                matrix[class_idx, concept_idx] = 1
+    else:
+        num_concept = len(concept2class)
+
+        concept2class = torch.tensor(concept2class).long().view(1, -1)
+        matrix = torch.zeros(num_class, num_concept)
+        matrix.scatter_(0, concept2class, 1)
 
     return matrix
 
