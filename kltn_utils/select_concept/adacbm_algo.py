@@ -105,7 +105,7 @@ def select_features(
 
     selected_features_indices2 = np.sort(selected_features_indices2).astype(int)
 
-    return selected_features_indices2, p_values
+    return selected_features_indices2
 
 
 def adacbm_selection(
@@ -155,13 +155,17 @@ def adacbm_selection(
     class_labels = torch.from_numpy(class_labels)
 
     # select features algorithm
-    selected_idx, _ = select_features(
+    selected_idx = select_features(
         dot_product=dot_product,
         class_labels=class_labels,
         selected_concept2cls=sorted_concept2cls,
         num_concepts_per_cls=num_concepts_per_cls,
         pearson_weight=pearson_weight,
     )
+
+    # TODO: DEBUG
+    kltn_utils.rank_zero_info_newline(f"len(selected_idx): {len(selected_idx)}")
+    # END DEBUG
 
     # selected_idx is for sorted_concept2cls
     return torch.from_numpy(sorted_concept2cls_idx[selected_idx])
