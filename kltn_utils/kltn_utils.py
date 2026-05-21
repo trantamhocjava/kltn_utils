@@ -345,7 +345,7 @@ def get_img_feat(
     clip_model.cuda()
     clip_model.eval()
     for epoch_idx, (img, label) in enumerate(img_loader):
-        rank_zero_info_newline(f"run epoch {epoch_idx + 1} / {len(img_loader)}")
+        rank_zero_info_newline(f"run batch {epoch_idx + 1} / {len(img_loader)}")
 
         img = img.cuda()
         img_feat = get_img_feat_from_clip_model(clip_model, clip_model_name, img).cpu()
@@ -374,7 +374,7 @@ def get_txt_feat(texts, clip_model, clip_model_name, tokenizer, batch_size):
     clip_model.cuda()
     clip_model.eval()
     for epoch_idx, batch in enumerate(text_loader):
-        rank_zero_info_newline(f"run epoch {epoch_idx + 1} / {len(text_loader)}")
+        rank_zero_info_newline(f"run batch {epoch_idx + 1} / {len(text_loader)}")
 
         text_token = batch[0].cuda()
         txt_feat = get_concept_feat_from_clip_model(
