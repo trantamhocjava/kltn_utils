@@ -65,7 +65,7 @@ def add_prefix_in_dict(data, mode):
     return {f"{mode}_{key}": value for key, value in data.items()}
 
 
-def dict_to_namespace(obj):
+def dict_to_namespace(obj: dict) -> SimpleNamespace:
     if isinstance(obj, dict):
         return SimpleNamespace(
             **{key: dict_to_namespace(value) for key, value in obj.items()}
