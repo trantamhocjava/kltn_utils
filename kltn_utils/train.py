@@ -3,7 +3,6 @@ import shutil
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
-from pytorch_lightning.strategies import DDPStrategy
 
 from kltn_utils import kltn_utils
 
@@ -33,10 +32,7 @@ def train_model(
         devices=2,
         max_epochs=end_epoch,
         precision="16-mixed" if amp else 32,
-        strategy=DDPStrategy(
-            find_unused_parameters=True,
-            start_method="fork",
-        ),
+        strategy="ddp_notebook",
         default_root_dir=cp_path,
         num_sanity_val_steps=0,
         logger=[csv_logger],
