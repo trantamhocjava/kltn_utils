@@ -33,7 +33,10 @@ def train_model(
         devices=2,
         max_epochs=end_epoch,
         precision="16-mixed" if amp else 32,
-        strategy=DDPStrategy(find_unused_parameters=True),
+        strategy=DDPStrategy(
+            find_unused_parameters=True,
+            start_method="fork",
+        ),
         default_root_dir=cp_path,
         num_sanity_val_steps=0,
         logger=[csv_logger],
