@@ -105,6 +105,7 @@ def submodular_select(
     num_images_per_class,
     submodular_weights,
 ):
+
     num_cls = len(num_images_per_class)
 
     all_mi_scores, _ = mi_score(img_feat, concept_feat, num_images_per_class)
@@ -122,7 +123,7 @@ def submodular_select(
     else:
         submodular_weights = np.array([1, facility_weight])
 
-    concept2cls = torch.from_numpy(concept2cls).long()
+    concept2cls = torch.tensor(concept2cls, dtype=torch.long)
 
     for i in range(num_cls):
         cls_idx = torch.where(concept2cls == i)[0]
