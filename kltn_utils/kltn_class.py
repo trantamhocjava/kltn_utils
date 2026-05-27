@@ -4,10 +4,10 @@ import time
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from lightning.pytorch.strategies import DDPStrategy
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.strategies import DDPStrategy
 
 from . import kltn_utils
 
