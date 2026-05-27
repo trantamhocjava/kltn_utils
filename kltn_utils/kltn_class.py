@@ -4,6 +4,7 @@ import time
 import numpy as np
 import pytorch_lightning as pl
 import torch
+from lightning.pytorch.strategies import DDPStrategy
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
@@ -203,7 +204,7 @@ class BaseTrainer:
             devices=2,
             max_epochs=end_epoch,
             precision="16-mixed" if amp else 32,
-            strategy="ddp_notebook",
+            strategy=DDPStrategy(find_unused_parameters=True),
             default_root_dir=cp_path,
             num_sanity_val_steps=0,
             logger=[csv_logger],
