@@ -1,8 +1,12 @@
+import shutil
 import time
 
 import numpy as np
 import pytorch_lightning as pl
 import torch
+from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import CSVLogger
 
 from . import kltn_utils
 
@@ -137,3 +141,87 @@ class BaseTrain(pl.LightningModule):
     def log_result(self, metric):
         for key, value in metric.items():
             self.log(key, value, on_step=False, on_epoch=True, sync_dist=True)
+
+
+class BaseTrainer:
+    def __init__(self, config) -> None:
+        self.config = config
+        self.model = None
+        self.train_loader = None
+        self.val_loader = None
+        self.test_loader = None
+
+    def next(self):
+        if self.config.mode == "train":
+            self.train_model(
+                cp_path=self.config.cp_path,
+                last_state=self.config.last_state,
+                monitor=self.config.monitor,
+                end_epoch=self.config.end_epoch,
+                amp=self.config.amp,
+                model=self.model,
+                train_loader=self.train_loader,
+                val_loader=self.val_loader,
+            )
+        else:
+            self.test_model(
+                model=self.model,
+                best_model_path=self.config.best_model,
+                test_loader=self.test_loader,
+            )
+
+    def train_model(
+        self,
+        cp_path,
+        last_state,
+        monitor,
+        end_epoch,
+        amp,
+        model,
+        train_loader,
+        val_loader,
+    ):
+        if last_state is not None:
+            kltn_utils.rank_zero_info_newline(f"Restore last state from {last_state}")
+            ckpt_path = f"{last_state}/last.ckpt"
+            shutil.copy(f"{last_state}/best.ckpt", f"{cp_path}/best.ckpt")
+        else:
+            ckpt_path = None
+
+        model_ckpt = ModelCheckpoint(
+            dirpath=cp_path,
+            save_top_k=1,
+            save_last=True,
+            monitor=monitor,
+            mode=kltn_utils.get_mode(monitor),
+            filename="best",
+        )
+        csv_logger = CSVLogger(save_dir=cp_path, name="", version="")
+
+        trainer = Trainer(
+            accelerator="gpu",
+            devices=2,
+            max_epochs=end_epoch,
+            precision="16-mixed" if amp else 32,
+            strategy="ddp_notebook",
+            default_root_dir=cp_path,
+            num_sanity_val_steps=0,
+            logger=[csv_logger],
+            callbacks=[model_ckpt],
+        )
+
+        trainer.fit(
+            model,
+            train_dataloaders=train_loader,
+            val_dataloaders=val_loader,
+            ckpt_path=ckpt_path,
+        )
+
+    def test_model(self, model, best_model_path, test_loader):
+        tester = Trainer(
+            accelerator="gpu",
+            devices=1,
+            precision=32,
+        )
+
+        tester.test(model=model, ckpt_path=best_model_path, dataloaders=test_loader)
