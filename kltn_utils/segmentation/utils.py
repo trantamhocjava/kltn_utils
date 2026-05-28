@@ -2,6 +2,7 @@ import torch
 from pytorch_lightning import seed_everything
 
 from .. import kltn_const
+from . import const
 
 
 def get_mode(monitor):
