@@ -43,7 +43,7 @@ class MetricCalculator:
 
     def update_loss_dict(self, result):
         for key, value in self.loss_dict.items():
-            value.append(result[key])
+            value.append(result[key].item())
 
     def return_loss_dict(self):
         result = {}
