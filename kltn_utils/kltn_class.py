@@ -339,6 +339,9 @@ class BaseKFoldTrainer:
             )
 
             best_score = model_ckpt.best_model_score.item()
+            # TODO: DEBUG
+            kltn_utils.rank_zero_info_newline(f"best_score: {best_score}")
+            # END DEBUG
             list_best_score.append(best_score)
 
         best_idx = kltn_utils.find_best_idx_in_list(list_best_score, mode)
