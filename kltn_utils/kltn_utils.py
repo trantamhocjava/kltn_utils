@@ -432,3 +432,14 @@ def get_num_images_per_class(dataset_dir, class_names):
     ]
 
     return num_images_per_class
+
+
+def find_best_idx_in_list(list_score, mode):
+    score_arr = np.array(list_score)
+
+    if mode == "max":
+        result = np.argmax(score_arr)
+    else:
+        result = np.argmin(score_arr)
+
+    return result

@@ -5,7 +5,12 @@ from .clip_model import build_clip_model, get_feat
 
 SEEDING = 42
 
-METRIC_MAX = ("val_c_overall_acc", "val_c_acc", "val_y_acc", "val_y_bmac")
+METRIC_MAX = (
+    "val_c_overall_acc",
+    "val_c_acc",
+    "val_y_acc",
+    "val_y_bmac",
+)
 
 IMAGE_PREPROCESS_LIST = [
     v2.Resize(
