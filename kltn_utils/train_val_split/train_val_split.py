@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 
 def train_val_test_stratified(labels, train_size, val_size):
     all_idx = np.arange(len(labels))
+    labels = np.array(labels)
 
     test_size = 1.0 - train_size - val_size
 
@@ -28,6 +29,7 @@ def train_val_test_stratified(labels, train_size, val_size):
 
 def train_test_stratified(labels, train_size):
     all_idx = np.arange(len(labels))
+    labels = np.array(labels)
 
     test_size = 1.0 - train_size
 
