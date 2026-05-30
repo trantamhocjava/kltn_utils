@@ -346,8 +346,9 @@ class BaseKFoldTrainer:
 
         best_idx = kltn_utils.find_best_idx_in_list(list_best_score, mode)
         best_folder_path = f"{cp_path}/fold_{best_idx}"
-        shutil.move(f"{best_folder_path}/last.ckpt", f"{cp_path}/last.ckpt")
-        shutil.move(f"{best_folder_path}/best.ckpt", f"{cp_path}/best.ckpt")
+
+        shutil.copy(f"{best_folder_path}/last.ckpt", f"{cp_path}/last.ckpt")
+        shutil.copy(f"{best_folder_path}/best.ckpt", f"{cp_path}/best.ckpt")
 
     def test_model(self, best_model_path, test_dataset):
         model = self.build_model_fn()
