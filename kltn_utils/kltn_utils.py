@@ -180,7 +180,7 @@ def list2tuple_for_dict(dictionary):
 def build_optimizer(params, optimizer_config):
     grad_true_param = filter(lambda p: p.requires_grad, params)
 
-    optimizer_config = vars(optimizer_config)
+    optimizer_config = deepcopy_obj(vars(optimizer_config))
     optimizer_name = optimizer_config.pop("optimizer")
     optimizer_config = list2tuple_for_dict(optimizer_config)
     optimizer_config["params"] = grad_true_param
@@ -199,7 +199,7 @@ def build_scheduler(optimizer, scheduler_config):
     if scheduler_config is None:
         return None, None
 
-    scheduler_config = vars(scheduler_config)
+    scheduler_config = deepcopy_obj(vars(scheduler_config))
     scheduler_name = scheduler_config.pop("scheduler")
     scheduler_config = list2tuple_for_dict(scheduler_config)
     scheduler_config["optimizer"] = optimizer
