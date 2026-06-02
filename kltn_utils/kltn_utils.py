@@ -196,26 +196,21 @@ def build_optimizer(params, optimizer_config):
 
 
 def build_scheduler(optimizer, scheduler_config):
-    if scheduler_config is None:
-        return None, None
-
     scheduler_config = deepcopy_obj(vars(scheduler_config))
     scheduler_name = scheduler_config.pop("scheduler")
     scheduler_config = list2tuple_for_dict(scheduler_config)
     scheduler_config["optimizer"] = optimizer
 
-    monitor = None
     if scheduler_name == "LinearLR":
         scheduler = optim.lr_scheduler.LinearLR(**scheduler_config)
     elif scheduler_name == "StepLR":
         scheduler = optim.lr_scheduler.StepLR(**scheduler_config)
     elif scheduler_name == "ReduceLROnPlateau":
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(**scheduler_config)
-        monitor = "val_loss"
     elif scheduler_name == "transformer_lr_scheduler":
         scheduler = get_linear_schedule_with_warmup(**scheduler_config)
 
-    return scheduler, monitor
+    return scheduler
 
 
 def build_clip_model(clip_model_name):
