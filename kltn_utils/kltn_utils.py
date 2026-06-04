@@ -438,3 +438,27 @@ def find_best_idx_in_list(list_score, mode):
         result = np.argmin(score_arr)
 
     return result
+
+
+def get_top_indices(score_list, mode, num_top):
+    score_list = np.array(score_list)
+
+    if mode == "max":
+        result = np.argsort(score_list)[::-1].tolist()
+    else:
+        result = np.argsort(score_list).tolist()
+
+    result = result[:num_top]
+
+    return result
+
+
+def get_sort_indices_for_list(score_list, mode):
+    score_list = np.array(score_list)
+
+    if mode == "max":
+        result = np.argsort(score_list)[::-1].tolist()
+    else:
+        result = np.argsort(score_list).tolist()
+
+    return result
