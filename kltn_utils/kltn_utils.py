@@ -462,3 +462,9 @@ def get_sort_indices_for_list(score_list, mode):
         result = np.argsort(score_list).tolist()
 
     return result
+
+
+def namespace2dict(param_dict):
+    result = deepcopy_obj(vars(param_dict))
+
+    return result
