@@ -454,6 +454,29 @@ def load_img_data_class_text(dataset_dir, class_names):
     return file_paths, label_texts
 
 
+def load_img_data_filename_class_text(dataset_dir, class_names):
+    """
+    labels: TEXT
+
+    dataset like:
+    ```
+    DATASET/
+    └── class_1/ # Contain image files
+    ├── class_2/
+    ....
+    ```
+    """
+    file_names = []
+    label_texts = []
+
+    for class_name in class_names:
+        file_names_item = os.listdir(f"{dataset_dir}/{class_name}")
+        file_names += file_names_item
+        label_texts += [class_name] * len(file_names_item)
+
+    return file_names, label_texts
+
+
 def get_sublist(src_list, select_idx):
     return [src_list[idx] for idx in select_idx]
 
