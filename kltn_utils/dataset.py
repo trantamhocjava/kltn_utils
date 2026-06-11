@@ -13,7 +13,7 @@ class ImageDataset(Dataset):
         self.dataset_dir = dataset_dir
         self.transforms = transform
 
-        self.file_paths, self.labels = kltn_utils.load_img_classify_data(
+        self.file_paths, self.labels = kltn_utils.load_img_data_class_number(
             dataset_dir, class_names
         )
 
@@ -37,7 +37,7 @@ class ImageConceptDataset(Dataset):
         self.dataset_dir = dataset_dir
         self.transforms = transform
 
-        self.file_paths, self.labels = kltn_utils.load_img_classify_data(
+        self.file_paths, self.labels = kltn_utils.load_img_data_class_number(
             dataset_dir, class_names
         )
 

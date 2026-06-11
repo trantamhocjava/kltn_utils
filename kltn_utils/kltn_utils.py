@@ -402,19 +402,56 @@ def build_class_concept_matrix(concept2class, num_class):
     return matrix
 
 
-def load_img_classify_data(dataset_dir, class_names):
+def load_img_data_class_number(dataset_dir, class_names):
+    """
+    labels: NUMBER
+
+    dataset like:
+    ```
+    DATASET/
+    └── class_1/ # Contain image files
+    ├── class_2/
+    ....
+    ```
+    """
     file_paths = []
     labels = []
 
     for class_index, class_name in enumerate(class_names):
         file_paths_item = [
-            f"{dataset_dir}/{class_name}/{i}"
-            for i in os.listdir(f"{dataset_dir}/{class_name}")
+            f"{dataset_dir}/{class_name}/{file_name}"
+            for file_name in os.listdir(f"{dataset_dir}/{class_name}")
         ]
         file_paths += file_paths_item
         labels += [class_index] * len(file_paths_item)
 
     return file_paths, labels
+
+
+def load_img_data_class_text(dataset_dir, class_names):
+    """
+    labels: TEXT
+
+    dataset like:
+    ```
+    DATASET/
+    └── class_1/ # Contain image files
+    ├── class_2/
+    ....
+    ```
+    """
+    file_paths = []
+    label_texts = []
+
+    for class_name in class_names:
+        file_paths_item = [
+            f"{dataset_dir}/{class_name}/{file_name}"
+            for file_name in os.listdir(f"{dataset_dir}/{class_name}")
+        ]
+        file_paths += file_paths_item
+        label_texts += [class_name] * len(file_paths_item)
+
+    return file_paths, label_texts
 
 
 def get_sublist(src_list, select_idx):
