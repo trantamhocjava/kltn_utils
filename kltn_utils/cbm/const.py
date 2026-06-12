@@ -1,6 +1,6 @@
 from .. import kltn_utils
 
-FOLDER_PATH = "kltn_utils/cbm"
+FOLDER_PATH = "cbm"
 
 CLASS_AND_CONCEPT = {
     "isic2018": kltn_utils.read_json_to_dict(
