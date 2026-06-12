@@ -22,14 +22,12 @@ class MetricCalculator:
         mask_true = torch.cat(self.mask_true, dim=0).numpy()
         mask_pred = torch.cat(self.mask_pred, dim=0).numpy()
 
-        dice = metric.cal_metric(mask_pred, mask_true, "dice")
-        iou = metric.cal_metric(mask_pred, mask_true, "iou")
-        accuracy = metric.cal_metric(mask_pred, mask_true, "accuracy")
-        specificity = metric.cal_metric(mask_pred, mask_true, "specificity")
-        precision = metric.cal_metric(mask_pred, mask_true, "precision")
-        hausdorff_distance_95 = metric.cal_metric(
-            mask_pred, mask_true, "hausdorff_distance_95"
-        )
+        dice = metric.dice_score(mask_pred, mask_true)
+        iou = metric.iou_score(mask_pred, mask_true)
+        accuracy = metric.accuracy(mask_pred, mask_true)
+        specificity = metric.specificity(mask_pred, mask_true)
+        precision = metric.precision(mask_pred, mask_true)
+        hausdorff_distance_95 = metric.hausdorff_distance_95(mask_pred, mask_true)
 
         return {
             "dice": dice,

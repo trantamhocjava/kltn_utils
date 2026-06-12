@@ -157,6 +157,9 @@ class BaseTrainer:
 
     def next(self):
         if self.config.mode == "train":
+            # Set up gradient
+            self.model.setup_grad()
+
             self.train_model(
                 cp_path=self.config.cp_path,
                 last_state=self.config.last_state,
@@ -297,6 +300,7 @@ class BaseKFoldTrainer:
             )
 
             model = self.build_model_fn()
+            model.setup_grad()
 
             if last_state is not None:
                 kltn_utils.rank_zero_info_newline(

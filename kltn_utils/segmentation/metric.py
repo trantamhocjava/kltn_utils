@@ -65,20 +65,3 @@ def hausdorff_distance_95(preds, targets):
     hd95_2 = np.percentile(d_target_to_pred, 95)
 
     return float(max(hd95_1, hd95_2))
-
-
-def cal_metric(preds, targets, mode):
-    if mode == "dice":
-        result = dice_score(preds, targets)
-    elif mode == "iou":
-        result = iou_score(preds, targets)
-    elif mode == "accuracy":
-        result = accuracy(preds, targets)
-    elif mode == "specificity":
-        result = specificity(preds, targets)
-    elif mode == "precision":
-        result = precision(preds, targets)
-    elif mode == "hausdorff_distance_95":
-        result = hausdorff_distance_95(preds, targets)
-
-    return result
