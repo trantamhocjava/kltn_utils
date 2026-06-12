@@ -25,11 +25,12 @@ class MetricCalculator:
 
     def update(self, result):
         y_pred = torch.argmax(result["y_logits"].detach(), dim=1)
-        self.y_pred.append(y_pred.cpu())
-        self.y_true.append(result["y"].cpu())
-
         concept_pred = (torch.sigmoid(result["c_logits"].detach()) >= 0.5).long()
+
+        self.y_pred.append(y_pred.cpu())
         self.c_pred.append(concept_pred.cpu())
+
+        self.y_true.append(result["y"].cpu())
         self.c_true.append(result["c"].cpu())
 
         self.update_loss_dict(result)
