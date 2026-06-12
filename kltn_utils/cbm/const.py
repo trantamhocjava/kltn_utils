@@ -1,15 +1,15 @@
-from .. import kltn_utils
+from importlib.resources import files
 
-FOLDER_PATH = "cbm"
+from . import utils
+
+FOLDER_PATH = "kltn_utils.cbm.data"
 
 CLASS_AND_CONCEPT = {
-    "isic2018": kltn_utils.read_json_to_dict(
-        f"{FOLDER_PATH}/data/isic2018/class_concept.json"
+    "isic2018": utils.load_json(
+        files(f"{FOLDER_PATH}.isic2018") / "class_concept.json"
     ),
-    "lcc": kltn_utils.read_json_to_dict(f"{FOLDER_PATH}/data/lcc/class_concept.json"),
-    "nct": kltn_utils.read_json_to_dict(f"{FOLDER_PATH}/data/nct/class_concept.json"),
-    "idrid": kltn_utils.read_json_to_dict(
-        f"{FOLDER_PATH}/data/idrid/class_concept.json"
-    ),
-    "busi": kltn_utils.read_json_to_dict(f"{FOLDER_PATH}/data/busi/class_concept.json"),
+    "lcc": utils.load_json(files(f"{FOLDER_PATH}.lcc") / "class_concept.json"),
+    "nct": utils.load_json(files(f"{FOLDER_PATH}.nct") / "class_concept.json"),
+    "idrid": utils.load_json(files(f"{FOLDER_PATH}.idrid") / "class_concept.json"),
+    "busi": utils.load_json(files(f"{FOLDER_PATH}.busi") / "class_concept.json"),
 }
