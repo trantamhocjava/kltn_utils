@@ -9,6 +9,7 @@ from sklearn.model_selection import StratifiedKFold
 from torch.utils.data import DataLoader, Subset
 
 from .. import kltn_utils
+from ..path import utils as path_utils
 
 
 class BaseStratifiedKFoldTrainer:
@@ -25,28 +26,12 @@ class BaseStratifiedKFoldTrainer:
 
     def next(self):
         if self.config.mode == "train":
-            self.train_model(
-                cp_path=self.config.cp_path,
-                last_state=self.config.last_state,
-                monitor=self.config.monitor,
-                end_epoch=self.config.end_epoch,
-                amp=self.config.amp,
-                train_dataset=self.train_dataset,
-            )
+            self.train_model()
         else:
-            self.test_model(
-                best_model_path=self.config.best_model,
-                test_dataset=self.test_dataset,
-            )
+            self.test_model()
 
     def train_model(
         self,
-        cp_path,
-        last_state,
-        monitor,
-        end_epoch,
-        amp,
-        train_dataset,
     ):
         kfold_obj = StratifiedKFold(
             n_splits=self.config.num_fold,
@@ -55,19 +40,19 @@ class BaseStratifiedKFoldTrainer:
         )
 
         list_best_score = []
-        mode = self.get_mode(monitor)
+        mode = self.get_mode(self.config.monitor)
 
         for fold_idx, (train_idx, val_idx) in enumerate(
             kfold_obj.split(
-                X=train_dataset.file_paths,
-                y=train_dataset.labels,
+                X=self.train_dataset.file_paths,
+                y=self.train_dataset.labels,
             )
         ):
             kltn_utils.rank_zero_info_newline(
                 f"run fold {fold_idx+1}/{self.config.num_fold}"
             )
-            train_subset = Subset(train_dataset, train_idx)
-            val_subset = Subset(train_dataset, val_idx)
+            train_subset = Subset(self.train_dataset, train_idx)
+            val_subset = Subset(self.train_dataset, val_idx)
 
             train_loader = DataLoader(
                 train_subset,
@@ -87,23 +72,26 @@ class BaseStratifiedKFoldTrainer:
             model = self.build_model_fn()
             model.setup_grad()
 
-            if last_state is not None:
+            if self.config.last_state is not None:
                 kltn_utils.rank_zero_info_newline(
-                    f"Restore last state from {last_state}"
+                    f"Restore last state from {self.config.last_state}"
                 )
-                ckpt_path = f"{last_state}/last.ckpt"
-                shutil.copy(f"{last_state}/best.ckpt", f"{cp_path}/best.ckpt")
+                ckpt_path = f"{self.config.last_state}/last.ckpt"
+                shutil.copy(
+                    f"{self.config.last_state}/best.ckpt",
+                    f"{self.config.cp_path}/best.ckpt",
+                )
             else:
                 ckpt_path = None
 
-            fold_cp_path = f"{cp_path}/fold_{fold_idx}"
+            fold_cp_path = f"{self.config.cp_path}/fold_{fold_idx}"
             os.makedirs(fold_cp_path, exist_ok=True)
 
             model_ckpt = ModelCheckpoint(
                 dirpath=fold_cp_path,
                 save_top_k=1,
                 save_last=True,
-                monitor=monitor,
+                monitor=self.config.monitor,
                 mode=mode,
                 filename="best",
             )
@@ -112,8 +100,8 @@ class BaseStratifiedKFoldTrainer:
             trainer = Trainer(
                 accelerator="gpu",
                 devices=2,
-                max_epochs=end_epoch,
-                precision="16-mixed" if amp else 32,
+                max_epochs=self.config.end_epoch,
+                precision="16-mixed" if self.config.amp else 32,
                 strategy=DDPStrategy(find_unused_parameters=True),
                 default_root_dir=fold_cp_path,
                 num_sanity_val_steps=0,
@@ -129,23 +117,22 @@ class BaseStratifiedKFoldTrainer:
             )
 
             best_score = model_ckpt.best_model_score.item()
-            # TODO: DEBUG
-            kltn_utils.rank_zero_info_newline(f"best_score: {best_score}")
-            # END DEBUG
             list_best_score.append(best_score)
 
         best_idx = kltn_utils.find_best_idx_in_list(list_best_score, mode)
-        best_folder_path = f"{cp_path}/fold_{best_idx}"
+        best_folder_path = f"{self.config.cp_path}/fold_{best_idx}"
 
-        shutil.copy(f"{best_folder_path}/last.ckpt", f"{cp_path}/last.ckpt")
-        shutil.copy(f"{best_folder_path}/best.ckpt", f"{cp_path}/best.ckpt")
-        shutil.copy(f"{best_folder_path}/metrics.csv", f"{cp_path}/metrics.csv")
+        path_utils.copy_files(
+            src_folder_path=best_folder_path,
+            des_folder_path=self.config.cp_path,
+            file_names=["last.ckpt", "best.ckpt", "metrics.csv"],
+        )
 
-    def test_model(self, best_model_path, test_dataset):
+    def test_model(self):
         model = self.build_model_fn()
 
         test_loader = DataLoader(
-            test_dataset,
+            self.test_dataset,
             batch_size=self.config.batch_size,
             shuffle=False,
             num_workers=2,
@@ -157,4 +144,6 @@ class BaseStratifiedKFoldTrainer:
             precision=32,
         )
 
-        tester.test(model=model, ckpt_path=best_model_path, dataloaders=test_loader)
+        tester.test(
+            model=model, ckpt_path=self.config.best_model, dataloaders=test_loader
+        )

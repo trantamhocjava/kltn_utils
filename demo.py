@@ -1,26 +1,18 @@
-config = {
-    "mode": "train",
-    "last_state": None,
-    "best_model": "/kaggle/working/checkpoint/best.ckpt",
-    "cp_path": "/kaggle/working/checkpoint",
-    "dataset_name": "aug_busi",
-    "dataset_dir": "/kaggle/input/datasets/tmtrnhelloworld/isic2018splittedv1",
-    "transform": "uniform",
-    "monitor": "val_dice",
-    "num_fold": 5,
-    "start_epoch": 1,
-    "end_epoch": 1,
-    "batch_size": 128,
-    "optimizer": {"optimizer": "adamw", "lr": 0.0001},
-    "amp": True,
-    "model": {
-        "aspp_channels": ,
-        "aspp_rates",
-        "n_qubits",
-        "n_qaoa_layers",
-        "n_quantum_layers",
-        "kan_hidden_dims",
-        "kan_grid",
-        "kan_k",
-    },
-}
+class BaseTrain(pl.LightningModule, ABC):
+    def __init__(self, CustomMetric, cp_path):
+        super().__init__()
+
+        self.train_metric = CustomMetric()
+        self.val_metric = CustomMetric()
+        self.test_metric = CustomMetric()
+
+        self.cp_path = cp_path
+
+    @abstractmethod
+    def setup_grad(self):
+        pass
+
+
+class Hello(BaseTrain):
+    def setup_grad(self):
+        pass

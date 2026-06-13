@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 
 
@@ -11,3 +12,8 @@ def get_file_name(file_path):
 
 def get_extension(file_path: str) -> str:
     return Path(file_path).suffix
+
+
+def copy_files(src_folder_path, des_folder_path, file_names):
+    for file_name in file_names:
+        shutil.copy(f"{src_folder_path}/{file_name}", f"{des_folder_path}/{file_name}")

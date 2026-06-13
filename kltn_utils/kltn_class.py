@@ -165,78 +165,66 @@ class BaseTrainer:
             # Set up gradient
             self.model.setup_grad()
 
-            self.train_model(
-                cp_path=self.config.cp_path,
-                last_state=self.config.last_state,
-                monitor=self.config.monitor,
-                end_epoch=self.config.end_epoch,
-                amp=self.config.amp,
-                model=self.model,
-                train_loader=self.train_loader,
-                val_loader=self.val_loader,
-            )
+            self.train_model()
         else:
-            self.test_model(
-                model=self.model,
-                best_model_path=self.config.best_model,
-                test_loader=self.test_loader,
-            )
+            self.test_model()
 
     def train_model(
         self,
-        cp_path,
-        last_state,
-        monitor,
-        end_epoch,
-        amp,
-        model,
-        train_loader,
-        val_loader,
     ):
-        if last_state is not None:
-            kltn_utils.rank_zero_info_newline(f"Restore last state from {last_state}")
-            ckpt_path = f"{last_state}/last.ckpt"
-            shutil.copy(f"{last_state}/best.ckpt", f"{cp_path}/best.ckpt")
+        if self.config.last_state is not None:
+            kltn_utils.rank_zero_info_newline(
+                f"Restore last state from {self.config.last_state}"
+            )
+            ckpt_path = f"{self.config.last_state}/last.ckpt"
+            shutil.copy(
+                f"{self.config.last_state}/best.ckpt",
+                f"{self.config.cp_path}/best.ckpt",
+            )
         else:
             ckpt_path = None
 
         model_ckpt = ModelCheckpoint(
-            dirpath=cp_path,
+            dirpath=self.config.cp_path,
             save_top_k=1,
             save_last=True,
-            monitor=monitor,
-            mode=kltn_utils.get_mode(monitor),
+            monitor=self.config.monitor,
+            mode=kltn_utils.get_mode(self.config.monitor),
             filename="best",
         )
-        csv_logger = CSVLogger(save_dir=cp_path, name="", version="")
+        csv_logger = CSVLogger(save_dir=self.config.cp_path, name="", version="")
 
         trainer = Trainer(
             accelerator="gpu",
             devices=2,
-            max_epochs=end_epoch,
-            precision="16-mixed" if amp else 32,
+            max_epochs=self.config.end_epoch,
+            precision="16-mixed" if self.config.amp else 32,
             strategy=DDPStrategy(find_unused_parameters=True),
-            default_root_dir=cp_path,
+            default_root_dir=self.config.cp_path,
             num_sanity_val_steps=0,
             logger=[csv_logger],
             callbacks=[model_ckpt],
         )
 
         trainer.fit(
-            model,
-            train_dataloaders=train_loader,
-            val_dataloaders=val_loader,
+            self.model,
+            train_dataloaders=self.train_loader,
+            val_dataloaders=self.val_loader,
             ckpt_path=ckpt_path,
         )
 
-    def test_model(self, model, best_model_path, test_loader):
+    def test_model(self):
         tester = Trainer(
             accelerator="gpu",
             devices=1,
             precision=32,
         )
 
-        tester.test(model=model, ckpt_path=best_model_path, dataloaders=test_loader)
+        tester.test(
+            model=self.model,
+            ckpt_path=self.config.best_model,
+            dataloaders=self.test_loader,
+        )
 
 
 class BaseKFoldTrainer:
