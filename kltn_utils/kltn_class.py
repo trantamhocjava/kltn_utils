@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+from abc import ABC, abstractmethod
 
 import numpy as np
 import pytorch_lightning as pl
@@ -72,7 +73,7 @@ class MetricCalculator:
         return result
 
 
-class BaseTrain(pl.LightningModule):
+class BaseTrain(pl.LightningModule, ABC):
     def __init__(self, CustomMetric, cp_path):
         super().__init__()
 
@@ -86,6 +87,10 @@ class BaseTrain(pl.LightningModule):
         pass
 
     def update_optimizer_manually(self, result):
+        pass
+
+    @abstractmethod
+    def setup_grad(self):
         pass
 
     def on_train_epoch_start(self):
