@@ -139,6 +139,7 @@ class BaseStratifiedKFoldTrainer:
 
         shutil.copy(f"{best_folder_path}/last.ckpt", f"{cp_path}/last.ckpt")
         shutil.copy(f"{best_folder_path}/best.ckpt", f"{cp_path}/best.ckpt")
+        shutil.copy(f"{best_folder_path}/metrics.csv", f"{cp_path}/metrics.csv")
 
     def test_model(self, best_model_path, test_dataset):
         model = self.build_model_fn()
