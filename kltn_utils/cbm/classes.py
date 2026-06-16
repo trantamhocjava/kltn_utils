@@ -150,6 +150,8 @@ class BaseStratifiedKFoldTrainer:
 
 
 class BaseStratifiedKFoldTrainerV1(BaseStratifiedKFoldTrainer):
+    """Select number of fold (train_idx, val_idx) to run, not like BaseStratifiedKFoldTrainer (run all)"""
+
     def __init__(self, config) -> None:
         super().__init__(config)
 
