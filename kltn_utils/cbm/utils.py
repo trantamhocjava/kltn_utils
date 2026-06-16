@@ -10,11 +10,12 @@ def load_json(package_file):
         return json.load(f)
 
 
-def get_label_concept(dataset_dir, file_names, class_names, concept2class):
+def get_label_concept(dataset_dir, file_names, class_names, concept2class, transform):
     file_paths = [f"{dataset_dir}/{item}" for item in file_names]
     imgs = []
     for file_path in file_paths:
         img = kltn_utils.read_img(file_path)
+        img = transform(img)
         imgs.append(img)
 
     img = torch.stack(imgs, dim=0)
