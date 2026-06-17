@@ -528,3 +528,20 @@ def namespace2dict(param_dict):
     result = deepcopy_obj(vars(param_dict))
 
     return result
+
+
+def load_state_dict_for_model(model, state_dict_path):
+    ckpt = torch.load(
+        state_dict_path,
+        map_location="cpu",
+        weights_only=False,
+    )
+    state_dict = ckpt["state_dict"]
+    state_dict = {
+        k.replace("model.", "", 1): v
+        for k, v in state_dict.items()
+        if k.startswith("model.")
+    }
+    model.load_state_dict(state_dict)
+
+    return model
