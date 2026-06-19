@@ -11,9 +11,9 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.strategies import DDPStrategy
 from torch.utils.data import DataLoader, Subset
-from uncompress import compress
 
 from . import kltn_utils
+from .uncompress import compress
 
 
 class MetricCalculator:
