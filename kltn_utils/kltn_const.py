@@ -27,16 +27,19 @@ CLIP_MODELS = {
         "source": "openai",
         "embedding_dim": 512,
         "visual_feature_dim": 768,
+        "num_heads": 12,
     },
     "ViT-B-16": {
         "source": "openai",
         "embedding_dim": 512,
         "visual_feature_dim": 768,
+        "num_heads": 12,
     },
     "ViT-L-14": {
         "source": "openai",
         "embedding_dim": 768,
         "visual_feature_dim": 1024,
+        "num_heads": 16,
     },
     "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224": {
         "source": "hf-hub",
