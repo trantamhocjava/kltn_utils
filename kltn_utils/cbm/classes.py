@@ -10,9 +10,16 @@ from torch.utils.data import DataLoader, Subset
 
 from .. import kltn_utils
 from ..path import utils as path_utils
+from ..uncompress import compress
 
 
 class BaseStratifiedKFoldTrainer:
+    """
+    For CBM problems with dataset have
+    - file_paths
+    - labels
+    """
+
     def __init__(self, config) -> None:
         self.config = config
         self.train_dataset = None
@@ -29,6 +36,10 @@ class BaseStratifiedKFoldTrainer:
             self.train_model()
         else:
             self.test_model()
+
+        compress.compress2zip(
+            folder_path=self.config.cp_path, zip_path=self.config.cp_path
+        )
 
     def train_model(
         self,

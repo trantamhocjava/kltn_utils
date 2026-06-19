@@ -11,6 +11,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.strategies import DDPStrategy
 from torch.utils.data import DataLoader, Subset
+from uncompress import compress
 
 from . import kltn_utils
 
@@ -168,6 +169,10 @@ class BaseTrainer:
             self.train_model()
         else:
             self.test_model()
+
+        compress.compress2zip(
+            folder_path=self.config.cp_path, zip_path=self.config.cp_path
+        )
 
     def train_model(
         self,
