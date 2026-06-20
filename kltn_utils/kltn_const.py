@@ -23,6 +23,42 @@ IMAGE_PREPROCESS_LIST = [
 
 
 CLIP_MODELS = {
+    "RN50": {
+        "source": "openai",
+        "embedding_dim": 1024,
+        "visual_feature_dim": 2048,
+        "num_heads": 16,
+    },
+    "RN101": {
+        "source": "openai",
+        "embedding_dim": 512,
+        "visual_feature_dim": 2048,
+        "num_heads": 16,
+    },
+    "RN50x4": {
+        "source": "openai",
+        "embedding_dim": 640,
+        "visual_feature_dim": 2560,
+        "num_heads": 16,
+    },
+    "RN50x16": {
+        "source": "openai",
+        "embedding_dim": 768,
+        "visual_feature_dim": 3072,
+        "num_heads": 12,
+    },
+    "RN50x64": {
+        "source": "openai",
+        "embedding_dim": 1024,
+        "visual_feature_dim": 4096,
+        "num_heads": 16,
+    },
+    "ViT-L-14@336px": {
+        "source": "openai",
+        "embedding_dim": 768,
+        "visual_feature_dim": 1024,
+        "num_heads": 16,
+    },
     "ViT-B-32": {
         "source": "openai",
         "embedding_dim": 512,
