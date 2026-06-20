@@ -53,12 +53,6 @@ CLIP_MODELS = {
         "visual_feature_dim": 4096,
         "num_heads": 16,
     },
-    "ViT-L-14@336px": {
-        "source": "openai",
-        "embedding_dim": 768,
-        "visual_feature_dim": 1024,
-        "num_heads": 16,
-    },
     "ViT-B-32": {
         "source": "openai",
         "embedding_dim": 512,
