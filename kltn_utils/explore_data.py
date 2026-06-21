@@ -19,7 +19,12 @@ def show_img(
     file_format = img.format
 
     plt.figure(figsize=(width, height))
-    plt.imshow(img)
+
+    if img.mode in ["L", "1"]:
+        plt.imshow(img, cmap="gray")
+    else:
+        plt.imshow(img)
+
     plt.axis("off")
     plt.show()
 
