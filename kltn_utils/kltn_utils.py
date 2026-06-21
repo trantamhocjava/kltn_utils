@@ -15,7 +15,7 @@ from sklearn import metrics
 from torch import optim
 from torch.utils.data import DataLoader, TensorDataset
 from torchvision.io import ImageReadMode, read_image
-from torchvision.transforms import v2
+from torchvision.transforms import InterpolationMode, v2
 from transformers import get_linear_schedule_with_warmup
 
 from . import dataset, kltn_const
@@ -126,7 +126,25 @@ def build_transform(transform_method):
         train_transform = v2.Compose(kltn_const.IMAGE_PREPROCESS_LIST)
         val_transform = v2.Compose(kltn_const.IMAGE_PREPROCESS_LIST)
 
-    return train_transform, val_transform
+        return train_transform, val_transform
+
+    if transform_method == "v1":
+        size = 288
+        transform_layers = [
+            v2.Resize(
+                size=size,
+                interpolation=InterpolationMode.BICUBIC,
+                max_size=None,
+                antialias=True,
+            ),
+            v2.CenterCrop(size=(size, size)),
+            v2.ToDtype(torch.float32, scale=True),
+            v2.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        ]
+        train_transform = v2.Compose(transform_layers)
+        val_transform = v2.Compose(transform_layers)
+
+        return train_transform, val_transform
 
 
 def build_blackbox_model(model_name, num_class):
