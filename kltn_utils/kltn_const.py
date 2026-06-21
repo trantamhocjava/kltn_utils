@@ -32,8 +32,8 @@ CLIP_MODELS = {
     "RN101": {
         "source": "openai",
         "embedding_dim": 512,
-        "visual_feature_dim": 2048,
-        "num_heads": 16,
+        "visual_feature_dim": 2047,
+        "num_heads": 23,
     },
     "RN50x4": {
         "source": "openai",
