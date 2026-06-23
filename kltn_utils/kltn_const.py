@@ -1,7 +1,7 @@
 import torch
 from torchvision.transforms import InterpolationMode, v2
 
-from .clip_model import build_clip_model, get_feat
+from .clip_model import build_clip_model, get_feat, get_txt_feat
 
 SEEDING = 42
 
@@ -95,5 +95,14 @@ CLIP_MODELS = {
         "build_clip_model_func": build_clip_model.build_biomedclip_orig_in21k,
         "get_img_feat_func": get_feat.get_img_feat_hf_hub,
         "get_concept_feat_func": get_feat.get_concept_feat_hf_hub,
+    },
+    "flaviagiammarino/pubmed-clip-vit-base-patch32": {
+        "source": "user_defined",
+        "embedding_dim": 512,
+        "visual_feature_dim": 768,
+        "num_heads": 12,
+        "build_clip_model_func": build_clip_model.build_pubmed_clip,
+        "get_img_feat_func": get_feat.get_img_feat_pubmedclip,
+        "get_txt_feat_from_texts_func": get_txt_feat.get_txt_feat_pubmedclip_from_texts,
     },
 }

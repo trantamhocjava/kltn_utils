@@ -1,6 +1,7 @@
 import open_clip
 import timm
 import torch.nn as nn
+from transformers import CLIPModel, CLIPProcessor
 
 from .. import kltn_const, kltn_utils
 
@@ -19,5 +20,12 @@ def build_biomedclip_orig_in21k(clip_model_name):
     src_model.head = nn.Identity()
 
     model.visual.trunk.load_state_dict(src_model.state_dict())
+
+    return model, tokenizer
+
+
+def build_pubmed_clip(clip_model_name):
+    model = CLIPModel.from_pretrained(clip_model_name)
+    tokenizer = CLIPProcessor.from_pretrained(clip_model_name)
 
     return model, tokenizer
