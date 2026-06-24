@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="kltn_utils",  # Tên thư viện của bạn
-    version="0.1.100",  # Phiên bản thư viện
+    version="0.1.101",  # Phiên bản thư viện
     packages=find_packages(),  # Tìm các package trong thư mục hiện tại
     install_requires=[
         "torch",
@@ -10,7 +10,6 @@ setup(
         (
             "hi-ml-multimodal @ "
             "git+https://github.com/microsoft/hi-ml.git"
-            "@<COMMIT_HASH>"
             "#subdirectory=hi-ml-multimodal"
         ),
     ],  # Các thư viện phụ thuộc (nếu có)

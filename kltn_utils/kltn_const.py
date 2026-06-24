@@ -105,4 +105,8 @@ CLIP_MODELS = {
         "get_img_feat_func": get_feat.get_img_feat_pubmedclip,
         "get_txt_feat_from_texts_func": get_txt_feat.get_txt_feat_pubmedclip_from_texts,
     },
+    "microsoft/BiomedVLP-BioViL-T": {
+        "source": "user_defined",
+        "build_clip_model_func": build_clip_model.build_biovil_t,
+    },
 }
