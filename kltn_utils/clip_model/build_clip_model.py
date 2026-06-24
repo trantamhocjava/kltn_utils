@@ -12,6 +12,7 @@ from transformers import (
 )
 
 from .. import kltn_const, kltn_utils
+from .bioViLTModel import BioViLTModel
 
 
 def build_biomedclip_orig_in21k(clip_model_name):
@@ -37,34 +38,6 @@ def build_pubmed_clip(clip_model_name):
     tokenizer = CLIPProcessor.from_pretrained(clip_model_name)
 
     return model, tokenizer
-
-
-class BioViLTModel(nn.Module):
-    def __init__(
-        self,
-        visual_encoder,
-        text_encoder,
-    ) -> None:
-        super().__init__()
-
-        self.visual_encoder = visual_encoder
-        self.text_encoder = text_encoder
-
-    def encode_text(
-        self,
-        input_ids,
-        attention_mask,
-    ):
-        return self.text_encoder.get_projected_text_embeddings(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-        )
-
-    def encode_image(
-        self,
-        pixel_values,
-    ):
-        return self.visual_encoder(pixel_values)
 
 
 def build_biovil_t(

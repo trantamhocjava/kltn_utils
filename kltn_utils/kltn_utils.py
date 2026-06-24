@@ -267,16 +267,13 @@ def unfreeze_module(m):
 def get_img_feat_from_clip_model(clip_model, clip_model_name, img):
     source = kltn_const.CLIP_MODELS[clip_model_name]["source"]
 
-    with torch.no_grad():
-        if source == "openai":
-            img_feat = clip_model.encode_image(img)
-        elif source == "hf-hub":
-            img_feat = clip_model(img, None)[0]
-        elif source == "user_defined":
-            get_img_feat_func = kltn_const.CLIP_MODELS[clip_model_name][
-                "get_img_feat_func"
-            ]
-            img_feat = get_img_feat_func(clip_model, img)
+    if source == "openai":
+        img_feat = clip_model.encode_image(img)
+    elif source == "hf-hub":
+        img_feat = clip_model(img, None)[0]
+    elif source == "user_defined":
+        get_img_feat_func = kltn_const.CLIP_MODELS[clip_model_name]["get_img_feat_func"]
+        img_feat = get_img_feat_func(clip_model, img)
 
     return img_feat
 
@@ -284,16 +281,15 @@ def get_img_feat_from_clip_model(clip_model, clip_model_name, img):
 def get_concept_feat_from_clip_model(clip_model, clip_model_name, concept_token):
     source = kltn_const.CLIP_MODELS[clip_model_name]["source"]
 
-    with torch.no_grad():
-        if source == "openai":
-            concept_feat = clip_model.encode_text(concept_token)
-        elif source == "hf-hub":
-            concept_feat = clip_model(None, concept_token)[1]
-        elif source == "user_defined":
-            get_concept_feat_func = kltn_const.CLIP_MODELS[clip_model_name][
-                "get_concept_feat_func"
-            ]
-            concept_feat = get_concept_feat_func(clip_model, concept_token)
+    if source == "openai":
+        concept_feat = clip_model.encode_text(concept_token)
+    elif source == "hf-hub":
+        concept_feat = clip_model(None, concept_token)[1]
+    elif source == "user_defined":
+        get_concept_feat_func = kltn_const.CLIP_MODELS[clip_model_name][
+            "get_concept_feat_func"
+        ]
+        concept_feat = get_concept_feat_func(clip_model, concept_token)
 
     return concept_feat
 
@@ -357,16 +353,19 @@ def get_img_feat(
 
     clip_model.cuda()
     clip_model.eval()
-    for epoch_idx, (img, label) in enumerate(img_loader):
-        rank_zero_info_newline(f"run batch {epoch_idx + 1} / {len(img_loader)}")
+    with torch.no_grad():
+        for epoch_idx, (img, label) in enumerate(img_loader):
+            rank_zero_info_newline(f"run batch {epoch_idx + 1} / {len(img_loader)}")
 
-        img = img.cuda()
-        img_feat = get_img_feat_from_clip_model(clip_model, clip_model_name, img).cpu()
-        res_img_feat.append(img_feat)
-        res_label.append(label)
+            img = img.cuda()
+            img_feat = get_img_feat_from_clip_model(
+                clip_model, clip_model_name, img
+            ).cpu()
+            res_img_feat.append(img_feat)
+            res_label.append(label)
 
-    res_img_feat = torch.cat(res_img_feat, dim=0)
-    res_label = torch.cat(res_label, dim=0)
+        res_img_feat = torch.cat(res_img_feat, dim=0)
+        res_label = torch.cat(res_label, dim=0)
 
     return res_img_feat, res_label
 
@@ -386,17 +385,18 @@ def get_txt_feat(texts, clip_model, clip_model_name, tokenizer, batch_size):
 
     clip_model.cuda()
     clip_model.eval()
-    for epoch_idx, batch in enumerate(text_loader):
-        rank_zero_info_newline(f"run batch {epoch_idx + 1} / {len(text_loader)}")
+    with torch.no_grad():
+        for epoch_idx, batch in enumerate(text_loader):
+            rank_zero_info_newline(f"run batch {epoch_idx + 1} / {len(text_loader)}")
 
-        text_token = batch[0].cuda()
-        txt_feat = get_concept_feat_from_clip_model(
-            clip_model, clip_model_name, text_token
-        ).cpu()
+            text_token = batch[0].cuda()
+            txt_feat = get_concept_feat_from_clip_model(
+                clip_model, clip_model_name, text_token
+            ).cpu()
 
-        res_txt_feat.append(txt_feat)
+            res_txt_feat.append(txt_feat)
 
-    res_txt_feat = torch.cat(res_txt_feat, dim=0)
+        res_txt_feat = torch.cat(res_txt_feat, dim=0)
 
     return res_txt_feat
 
