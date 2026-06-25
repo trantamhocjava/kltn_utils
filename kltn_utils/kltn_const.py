@@ -108,5 +108,11 @@ CLIP_MODELS = {
     "microsoft/BiomedVLP-BioViL-T": {
         "source": "user_defined",
         "build_clip_model_func": build_clip_model.build_biovil_t,
+        "img_dim": 512,
+        "concept_dim": 128,
+        "visual_feature_dim": 2048,
+        "num_heads": 32,
+        "get_img_feat_func": get_feat.get_img_feat_BiomedVLP,
+        "get_txt_feat_from_texts_func": get_txt_feat.get_txt_feat_pubmedclip_from_texts,
     },
 }

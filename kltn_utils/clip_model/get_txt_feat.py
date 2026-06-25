@@ -54,3 +54,44 @@ def get_txt_feat_pubmedclip_from_texts(texts, clip_model, tokenizer, batch_size)
     txt_feat = torch.cat(res_txt_feat, dim=0)
 
     return txt_feat
+
+
+def get_txt_feat_BiomedVLP_from_texts(texts, clip_model, tokenizer, batch_size):
+    text_input = tokenizer(
+        texts,
+        padding=True,
+        truncation=True,
+        max_length=256,
+        return_tensors="pt",
+    )
+
+    text_loader = DataLoader(
+        TensorDataset(text_input["input_ids"], text_input["attention_mask"]),
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+    )
+
+    res_txt_feat = []
+
+    clip_model.cuda()
+    clip_model.eval()
+    with torch.no_grad():
+        for epoch_idx, batch in enumerate(text_loader):
+            print(f"run batch {epoch_idx + 1} / {len(text_loader)}")
+
+            input_ids, attention_mask = batch
+            input_ids = input_ids.cuda()
+            attention_mask = attention_mask.cuda()
+
+            txt_feat = clip_model.encode_text(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+            ).cpu()
+
+            res_txt_feat.append(txt_feat)
+
+    txt_feat = torch.cat(res_txt_feat, dim=0)
+
+    return txt_feat

@@ -18,6 +18,10 @@ def get_img_feat_pubmedclip(model, img):
     return img_feat
 
 
+def get_img_feat_BiomedVLP(model, img):
+    return model.encode_image(img).img_embedding
+
+
 def get_concept_feat_openai(clip_model, concept_token):
     return clip_model.encode_text(concept_token)
 

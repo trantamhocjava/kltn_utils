@@ -26,4 +26,4 @@ class BioViLTModel(nn.Module):
         self,
         img,
     ):
-        return self.visual_encoder(img).img_embedding
+        return self.visual_encoder(img)
