@@ -22,6 +22,13 @@ def get_img_feat_BiomedVLP(model, img):
     return model.encode_image(img).img_embedding
 
 
+def get_img_feat_pmc_clip(model, img):
+    visual_output = model.visual(img)
+    img_embedding = visual_output["image_features"]
+
+    return img_embedding
+
+
 def get_concept_feat_openai(clip_model, concept_token):
     return clip_model.encode_text(concept_token)
 

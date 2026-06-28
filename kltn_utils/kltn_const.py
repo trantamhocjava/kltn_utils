@@ -1,7 +1,7 @@
 import torch
 from torchvision.transforms import InterpolationMode, v2
 
-from .clip_model import build_clip_model, get_feat, get_txt_feat
+from .clip_model import build_clip_model, build_pmc_clip, get_feat, get_txt_feat
 
 SEEDING = 42
 
@@ -114,5 +114,14 @@ CLIP_MODELS = {
         "num_heads": 32,
         "get_img_feat_func": get_feat.get_img_feat_BiomedVLP,
         "get_txt_feat_from_texts_func": get_txt_feat.get_txt_feat_pubmedclip_from_texts,
+    },
+    "pmc_clip": {
+        "source": "user_defined",
+        "build_clip_model_func": build_pmc_clip.build_pmc_clip_model,
+        "embedding_dim": 768,
+        "visual_feature_dim": 2048,
+        "num_heads": 32,
+        "get_img_feat_func": get_feat.get_img_feat_pmc_clip,
+        "get_txt_feat_from_texts_func": get_txt_feat.get_txt_feat_PMC_CLIP_from_texts,
     },
 }
