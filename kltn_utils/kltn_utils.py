@@ -146,6 +146,24 @@ def build_transform(transform_method):
 
         return train_transform, val_transform
 
+    if transform_method == "v2":
+        size = 384
+        transform_layers = [
+            v2.Resize(
+                size=size,
+                interpolation=InterpolationMode.BICUBIC,
+                max_size=None,
+                antialias=True,
+            ),
+            v2.CenterCrop(size=(size, size)),
+            v2.ToDtype(torch.float32, scale=True),
+            v2.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        ]
+        train_transform = v2.Compose(transform_layers)
+        val_transform = v2.Compose(transform_layers)
+
+        return train_transform, val_transform
+
 
 def build_blackbox_model(model_name, num_class):
     model = timm.create_model(model_name, pretrained=True, num_classes=num_class)
