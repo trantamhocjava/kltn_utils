@@ -2,36 +2,26 @@
 
 Reference Code: [ViLT](https://github.com/dandelin/ViLT/blob/762fd3975c180db6fc88f577cf39549983fa373a/vilt/modules/vision_transformer.py)
 """
-from collections import OrderedDict
-from dataclasses import dataclass
-import logging
-import math
-from typing import Tuple, Union, Callable, Optional
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch.utils.checkpoint import checkpoint
+from transformers import AutoModel, AutoTokenizer
 
-from pmc_clip.timm_model import TimmModel
-from pmc_clip.utils import freeze_batch_norm_2d, to_2tuple
-
-from transformers import AutoTokenizer, AutoModel
-
-from .config import CLIPVisionCfg, CLIPTextCfg
-from .blocks import Bottleneck, AttentionPool2d, ResNet, ModifiedResNet, LayerNorm, QuickGELU, ResidualAttentionBlock,\
-                    Transformer
+from ..timm_model import TimmModel
+from .blocks import LayerNorm, ModifiedResNet, QuickGELU, ResNet, Transformer
+from .config import CLIPTextCfg, CLIPVisionCfg
 
 
 class PMC_CLIP(nn.Module):
     def __init__(
-            self,
-            args,
-            embed_dim: int,
-            vision_cfg: CLIPVisionCfg,
-            text_cfg: CLIPTextCfg,
-            quick_gelu: bool = False,
+        self,
+        args,
+        embed_dim: int,
+        vision_cfg: CLIPVisionCfg,
+        text_cfg: CLIPTextCfg,
+        quick_gelu: bool = False,
     ):
         super().__init__()
         if isinstance(vision_cfg, dict):
@@ -55,9 +45,11 @@ class PMC_CLIP(nn.Module):
                 pool=vision_cfg.timm_pool,
                 proj=vision_cfg.timm_proj,
                 embed_dim=embed_dim,
-                image_size=vision_cfg.image_size
+                image_size=vision_cfg.image_size,
             )
-            act_layer = nn.GELU  # so that text transformer doesn't use QuickGELU w/ timm models
+            act_layer = (
+                nn.GELU
+            )  # so that text transformer doesn't use QuickGELU w/ timm models
         elif isinstance(vision_cfg.layers, (tuple, list)):
             VisualBackbone = {
                 "RN50": ResNet,
@@ -70,7 +62,7 @@ class PMC_CLIP(nn.Module):
                 output_dim=embed_dim,
                 heads=vision_heads,
                 image_size=vision_cfg.image_size,
-                width=vision_cfg.width
+                width=vision_cfg.width,
             )
         else:
             vision_heads = vision_cfg.width // vision_cfg.head_width
@@ -88,12 +80,16 @@ class PMC_CLIP(nn.Module):
         if text_cfg.bert_model_name:
             # Tokenizer
             tokenizer_name = text_cfg.bert_model_name
-            assert text_cfg.bert_model_name == 'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext', \
-                "Please check [CLS]'s token id"
+            assert (
+                text_cfg.bert_model_name
+                == "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext"
+            ), "Please check [CLS]'s token id"
             self.cls_id = 2  # [CLS]'s token id is 2, while it varies from tokenizers
             self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
-            self.text_encoder = AutoModel.from_pretrained(text_cfg.bert_model_name)#, return_dict=True)
+            self.text_encoder = AutoModel.from_pretrained(
+                text_cfg.bert_model_name
+            )  # , return_dict=True)
         else:
             self.text_encoder = Transformer(
                 width=text_cfg.width,
@@ -102,13 +98,17 @@ class PMC_CLIP(nn.Module):
                 act_layer=act_layer,
             )
         self.transformer_width = text_cfg.width
-        self.positional_embedding = nn.Parameter(torch.empty(self.context_length, text_cfg.width))
+        self.positional_embedding = nn.Parameter(
+            torch.empty(self.context_length, text_cfg.width)
+        )
         self.ln_final = LayerNorm(text_cfg.width)
 
         self.text_projection = nn.Parameter(torch.empty(text_cfg.width, embed_dim))
         self.mlm_projection = None
         if args.mlm:
-            self.mlm_projection = nn.Parameter(torch.empty(text_cfg.width, text_cfg.vocab_size))
+            self.mlm_projection = nn.Parameter(
+                torch.empty(text_cfg.width, text_cfg.vocab_size)
+            )
         self.softmax = nn.LogSoftmax(dim=-1)
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
         self.img_special_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
@@ -117,7 +117,7 @@ class PMC_CLIP(nn.Module):
             layers=text_cfg.fusion_layers,
             heads=text_cfg.heads,
         )
-        self.register_buffer('attn_mask', self.build_attention_mask(), persistent=False)
+        self.register_buffer("attn_mask", self.build_attention_mask(), persistent=False)
 
         self.init_parameters()
 
@@ -125,13 +125,13 @@ class PMC_CLIP(nn.Module):
         nn.init.normal_(self.positional_embedding, std=0.01)
         nn.init.constant_(self.logit_scale, np.log(1 / 0.07))
 
-        if hasattr(self.visual, 'init_parameters'):
+        if hasattr(self.visual, "init_parameters"):
             self.visual.init_parameters()
 
         if self.text_projection is not None:
-            nn.init.normal_(self.text_projection, std=self.transformer_width ** -0.5)
+            nn.init.normal_(self.text_projection, std=self.transformer_width**-0.5)
         if self.mlm_projection is not None:
-            nn.init.normal_(self.mlm_projection, std=self.transformer_width ** -0.5)
+            nn.init.normal_(self.mlm_projection, std=self.transformer_width**-0.5)
 
     def build_attention_mask(self):
         # lazily create causal attention mask, with full attention between the vision tokens
@@ -143,7 +143,9 @@ class PMC_CLIP(nn.Module):
 
     def lock_image_tower(self, unlocked_groups=0, freeze_bn_stats=False):
         # lock image tower as per LiT - https://arxiv.org/abs/2111.07991
-        self.visual.lock(unlocked_groups=unlocked_groups, freeze_bn_stats=freeze_bn_stats)
+        self.visual.lock(
+            unlocked_groups=unlocked_groups, freeze_bn_stats=freeze_bn_stats
+        )
 
     @torch.jit.ignore
     def set_grad_checkpointing(self, enable=True):
@@ -154,24 +156,41 @@ class PMC_CLIP(nn.Module):
         return self.visual(image)
 
     def encode_text(self, batch, image_features):
-        encoded_input = self.tokenizer(batch["bert_input"], padding='max_length', truncation=True, max_length=self.context_length, return_tensors='pt')
-        encoded_label = self.tokenizer(batch['bert_label'], padding='max_length', truncation=True, max_length=self.context_length, return_tensors='pt')
-        encoded_label = encoded_label['input_ids'].to(self.device)
-        encoded_input['input_ids'] = encoded_input['input_ids'].to(self.device)  # [128, 77]
+        encoded_input = self.tokenizer(
+            batch["bert_input"],
+            padding="max_length",
+            truncation=True,
+            max_length=self.context_length,
+            return_tensors="pt",
+        )
+        encoded_label = self.tokenizer(
+            batch["bert_label"],
+            padding="max_length",
+            truncation=True,
+            max_length=self.context_length,
+            return_tensors="pt",
+        )
+        encoded_label = encoded_label["input_ids"].to(self.device)
+        encoded_input["input_ids"] = encoded_input["input_ids"].to(
+            self.device
+        )  # [128, 77]
 
         x = self.text_encoder(
-            input_ids = encoded_input['input_ids'],
-            output_attentions = False
+            input_ids=encoded_input["input_ids"], output_attentions=False
         )
-        x = x['last_hidden_state']
-        last_token_index = torch.nonzero( (encoded_input['input_ids'] == self.cls_id).squeeze() )
+        x = x["last_hidden_state"]
+        last_token_index = torch.nonzero(
+            (encoded_input["input_ids"] == self.cls_id).squeeze()
+        )
         text_features = x[torch.arange(x.shape[0]), last_token_index[:, 1]]
         text_features = text_features @ self.text_projection  # NOTE for matching
-        
+
         # Fusion Module
         img = torch.unsqueeze(image_features, 1)  # [128, 1 ,768]
         B, _len, _dim = x.shape
-        img_special_tokens = self.img_special_token.expand(B, -1, -1)  # [128, 1, embed_dim]
+        img_special_tokens = self.img_special_token.expand(
+            B, -1, -1
+        )  # [128, 1, embed_dim]
         x = torch.cat([x, img_special_tokens, img], dim=1)  # [128, 77+1+1, 768]
         x = x.permute(1, 0, 2)  # NLD -> LND
         x = self.fusion_module(x)
@@ -180,10 +199,14 @@ class PMC_CLIP(nn.Module):
 
         bert_prediction = None
         if self.args.mlm:
-            bert_prediction = self.softmax(x @ self.mlm_projection)  # [batch_size=128, n_ctx=77, vocab_size=49409]
+            bert_prediction = self.softmax(
+                x @ self.mlm_projection
+            )  # [batch_size=128, n_ctx=77, vocab_size=49409]
 
         attentions = None
-        text_output = dict.fromkeys(["text_features", "bert_prediction", "attentions", "encoded_label"], None)
+        text_output = dict.fromkeys(
+            ["text_features", "bert_prediction", "attentions", "encoded_label"], None
+        )
         for key in text_output:
             text_output[key] = eval(key)  # HACK dark magic, could be dangerous
 
@@ -194,22 +217,35 @@ class PMC_CLIP(nn.Module):
         image = image.to(device=self.device, non_blocking=True)
 
         if (image is None) or (batch["bert_input"] is None):
-            raise RuntimeError('Missing Image OR Text in the input')
+            raise RuntimeError("Missing Image OR Text in the input")
 
         image_features = self.encode_image(image)
-        image_features = F.normalize(image_features['image_features'], dim=-1)  # [128, 768]
+        image_features = F.normalize(
+            image_features["image_features"], dim=-1
+        )  # [128, 768]
 
         text_output = self.encode_text(batch, image_features)
         text_features = F.normalize(text_output["text_features"], dim=-1)
 
-        clip_prediction = dict.fromkeys(["image_features", "text_features", "logit_scale", "bert_label", "bert_prediction", "attentions"], None)
-        clip_prediction.update({
-            "image_features": image_features,
-            "text_features": text_features,
-            "logit_scale": self.logit_scale.exp(),
-            "bert_label": text_output["encoded_label"],
-            "bert_prediction": text_output["bert_prediction"],
-            "attentions": text_output["attentions"]
-        })
+        clip_prediction = dict.fromkeys(
+            [
+                "image_features",
+                "text_features",
+                "logit_scale",
+                "bert_label",
+                "bert_prediction",
+                "attentions",
+            ],
+            None,
+        )
+        clip_prediction.update(
+            {
+                "image_features": image_features,
+                "text_features": text_features,
+                "logit_scale": self.logit_scale.exp(),
+                "bert_label": text_output["encoded_label"],
+                "bert_prediction": text_output["bert_prediction"],
+                "attentions": text_output["attentions"],
+            }
+        )
         return clip_prediction
-
