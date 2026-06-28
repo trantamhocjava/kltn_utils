@@ -3,10 +3,15 @@ from types import SimpleNamespace
 from typing import Tuple
 
 import torch
-from pmc_clip import create_model_and_transforms
-from pmc_clip.pretrained import download_pretrained
 from torch import nn
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
+
+from kltn_utils.third_party.pmc_clip import (
+    create_model_and_transforms,
+)
+from kltn_utils.third_party.pmc_clip.pretrained import (
+    download_pretrained,
+)
 
 PMC_CLIP_CHECKPOINT_URL = (
     "https://huggingface.co/datasets/" "axiong/pmc_oa/resolve/main/checkpoint.pt"

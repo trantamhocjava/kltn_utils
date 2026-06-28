@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="kltn_utils",  # Tên thư viện của bạn
-    version="0.1.106",  # Phiên bản thư viện
+    version="0.1.107",  # Phiên bản thư viện
     packages=find_packages(),  # Tìm các package trong thư mục hiện tại
     install_requires=[
         "transformers",
@@ -10,11 +10,6 @@ setup(
             "hi-ml-multimodal @ "
             "git+https://github.com/microsoft/hi-ml.git"
             "#subdirectory=hi-ml-multimodal"
-        ),
-        (
-            "pmc-clip @ "
-            "git+https://github.com/WeixiongLin/PMC-CLIP.git"
-            "#subdirectory=src"
         ),
     ],  # Các thư viện phụ thuộc (nếu có)
     include_package_data=True,
@@ -27,6 +22,8 @@ setup(
             "cbm/data/idrid/*.json",
             "cbm/data/lcc/*.json",
             "cbm/data/nct/*.json",
+            # File cấu hình PMC-CLIP
+            "third_party/pmc_clip/model_configs/*.json",
         ],
     },
 )
